@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity Reg is
+entity  Reg is
 	port(
 	-- Write Port 1 prioritaire
 		wdata1		: in Std_Logic_Vector(31 downto 0); --port écriture data1 
