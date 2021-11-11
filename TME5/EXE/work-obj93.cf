@@ -1,0 +1,19 @@
+v 4
+file . "EXE_tb.vhdl" "3f900e61e8f3e63fe86d3c5f2341ae8a762ea10d" "20211023105214.760":
+  entity exe_tb at 5( 32) + 0 on 33;
+  architecture behavior of exe_tb at 14( 160) + 0 on 34;
+file . "fifo_72b.vhdl" "0e754650560b07c0738e014e3462a20b160d92f7" "20211023105214.736":
+  entity fifo at 1( 0) + 0 on 29;
+  architecture dataflow of fifo at 24( 377) + 0 on 30;
+file . "../ALU/ALU.vhdl" "b6377510a6eddb05189a5acc05a22cdd5f241366" "20211023105214.712":
+  entity alu at 5( 34) + 0 on 25;
+  architecture behavior of alu at 23( 560) + 0 on 26;
+file . "multiplexer.vhdl" "67280e64634a26c7da17259da5de8189c85fa01b" "20211023105214.698":
+  entity mux21 at 5( 32) + 0 on 23;
+  architecture behavior of mux21 at 18( 337) + 0 on 24;
+file . "../Shifter/shifter.vhdl" "a15c3c163a71298d1d64d07ff7711490ec1bb1a0" "20211023105214.725":
+  entity shifter at 5( 37) + 0 on 27;
+  architecture behavior of shifter at 27( 754) + 0 on 28;
+file . "EXE.vhdl" "42e8796aaeb1d19c97e22eb1922432f332c784e3" "20211023105214.747":
+  entity exec at 1( 0) + 0 on 31;
+  architecture behavior of exec at 79( 2310) + 0 on 32;

@@ -1,0 +1,7 @@
+v 4
+file . "reg.vhdl" "68bed845b22559f0ec9c57da09c99cf5076cbff6" "20211028192726.222":
+  entity reg at 1( 0) + 0 on 23;
+  architecture behavior of reg at 74( 2537) + 0 on 24;
+file . "reg_tb.vhdl" "6941dfd73a9293cde39d3a9cf6c0f079b0e16426" "20211028192707.694":
+  entity reg_tb at 1( 0) + 0 on 21;
+  architecture behavior of reg_tb at 10( 127) + 0 on 22;
