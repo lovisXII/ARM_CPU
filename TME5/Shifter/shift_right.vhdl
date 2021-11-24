@@ -14,10 +14,8 @@ ENTITY Shift_right IS
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
-    cout      : OUT Std_Logic;
-    -- global interface
-    vdd       : IN  bit;
-    vss       : IN  bit );
+    cout      : OUT Std_Logic
+    );
 END Shift_right;
 
 ARCHITECTURE behavior OF Shift_right IS

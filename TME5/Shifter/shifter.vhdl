@@ -25,109 +25,82 @@ ENTITY Shifter IS
 END Shifter;
 
 ARCHITECTURE behavior OF Shifter IS
-BEGIN
-shifter_process_1 :PROCESS(shift_lsl,shift_lsr,shift_ror,shift_rrx,shift_val,din)
+    signal out_shift_left, out_shift_right, out_shift_ror : std_logic_vector(31 downto 0) ;
+    signal carry_out_left, carry_out_right, carry_out_ror : std_logic ;
+
+    component shift_left
+    port (
+    cin :               in std_logic_vector(31 downto 0) ;
+    shift_value :       in std_logic_vector(4 downto 0);
+    cout :              out std_logic_vector(31 downto 0);
+    carry_out :         out std_logic 
+    );
     
-    VARIABLE immediat_shift : integer ;
+    end component ;
 
-    --On va définir des fonctions effectuant chacun des shift. Le bit 32 recupèrera toujours la carry
+    component shift_right 
+    PORT(
+    arithmetic: IN Std_Logic;
+    shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
+    din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
+    cin       : IN  Std_Logic;
+    dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
+    cout      : OUT Std_Logic
+    );    
+    end component ;
 
-    FUNCTION shifte_left (a : Std_Logic_Vector(31 downto 0); b : integer) RETURN Std_Logic_Vector IS
-        VARIABLE valeur_retour : Std_Logic_Vector(32 downto 0) ;
-        BEGIN
-            valeur_retour(32) := a(31) ;
-            --On met à 0 toutes les valeurs en dessous de la valeur du shift 
-            initialisation_des_zeros : FOR j IN 0 TO (b-1) loop
-                    valeur_retour(j) := '0' ;
-            END LOOP initialisation_des_zeros ;
+    component ror_entity
+    PORT(
+    shift_val : IN  Std_Logic_Vector(4 downto 0) ;
+    din       : IN  Std_Logic_Vector(31 downto 0);  
+    cin       : IN  Std_Logic;
+    dout      : OUT Std_Logic_Vector(31 downto 0); 
+    cout      : OUT Std_Logic);
+    end component ;
 
-            parcours_de_a : FOR i IN b TO (a'length-1) loop
-                    valeur_retour(i) := a(i-b) ;
-            END LOOP parcours_de_a ;
+BEGIN
 
-    RETURN valeur_retour ;
-    END FUNCTION ;
+    shift_left0 : shift_left port map
+    (
+     cin => din , 
+     shift_value => shift_val, 
+     cout => out_shift_left, 
+     carry_out => carry_out_left
+     );    
 
-    FUNCTION shifte_right (a : Std_Logic_Vector(31 downto 0); b : integer) RETURN Std_Logic_Vector IS
-        VARIABLE valeur_retour : Std_Logic_Vector(32 downto 0) ;
-        BEGIN
-            valeur_retour(32) := a(0) ; -- on récupère a(0) que l'on stocke dans la carry
+    shift_right0 : shift_right port map
+    (
+     arithmetic => shift_asr ,
+     din => din , 
+     cin => cin ,
+     shift_val => shift_val, 
+     dout => out_shift_right, 
+     cout => carry_out_right
+     );    
 
-            --On met a 0 toutes les valeurs au dessus du shift
-            initialisation_des_zeros : FOR j IN 0 TO b loop
-                    valeur_retour(a'length-1-j):= '0' ;
-            END LOOP initialisation_des_zeros ;
-
-            parcours_de_a : FOR i IN 0 TO (a'length-1-(b+1)) loop
-                    valeur_retour(i) := a(i+b) ;
-            END LOOP parcours_de_a ;
-
-    RETURN valeur_retour ;
-    END FUNCTION ;
-
-    FUNCTION shifte_asr (a : Std_Logic_Vector(31 downto 0); b : integer) RETURN Std_Logic_Vector IS
-        VARIABLE valeur_retour : Std_Logic_Vector(32 downto 0) ;
-        BEGIN
-            valeur_retour(32) := a(0) ; -- recupere la retenue
-            valeur_retour(31) := a(31) ; --on récupère le bit de signe
-            initialisation_des_zeros : FOR j   IN 0 TO b loop
-                    valeur_retour(a'length-(j+1)) := '0' ;
-            END LOOP ;
-
-            parcours_de_a : FOR i IN 0 TO (a'length-1-(b+1)) loop
-                    valeur_retour(i) := a(i+b) ;
-            END LOOP ;
-            
-
-    RETURN valeur_retour ;
-    END FUNCTION ;
-
-    FUNCTION shifte_ror (a : Std_Logic_Vector; b : integer) RETURN Std_Logic_Vector IS
-            VARIABLE valeur_retour : Std_Logic_Vector(32 downto 0) ;
-        BEGIN
-            valeur_retour(32) := a(0) ; -- on stocke a(0) dans la carry
-            FOR i IN 0 TO (a'length-1) LOOP
-                --il faut faire une disjonction des cas pour effectuer la rotation correctement
-                IF i < b THEN 
-                    valeur_retour(a'length-1-i) := a(i) ;
-                else
-                    valeur_retour(a'length-1-i) := a(a'length-1+b-i) ;
-                END IF ;
-            END LOOP;
-    RETURN valeur_retour ;
-    END FUNCTION ;
-
-    FUNCTION shifte_rrx (a : Std_Logic_Vector; carry_in : std_logic) RETURN Std_Logic_Vector IS
-            VARIABLE valeur_retour : Std_Logic_Vector(32 downto 0) ;
-        BEGIN
-            valeur_retour(32) := a(0) ; -- on stocke a(0) dans la carry
-            valeur_retour(31) := carry_in ;
-            FOR i IN 0 TO (a'length-2) LOOP
-                    valeur_retour(i) := a(i+1) ;
-            END LOOP;
-    RETURN valeur_retour ;
-    END FUNCTION ;
+    shift_ror0 : ror_entity port map
+    (
+     din => din , 
+     cin => cin ,
+     shift_val => shift_val, 
+     dout => out_shift_ror, 
+     cout => carry_out_ror
+     );   
 
 
-    BEGIN
 
-    immediat_shift := to_integer(UNSIGNED(shift_val)) ;
 
+shifter_process_1 :PROCESS(out_shift_ror,out_shift_left,out_shift_right, shift_lsl,shift_lsr,shift_ror, shift_asr)
+    begin
     IF(shift_lsl = '1') THEN
-            dout <= shifte_left(din,immediat_shift)(31 downto 0) ;
-            cout <= shifte_left(din,immediat_shift)(32) ;
-    ELSIF (shift_lsr = '1') THEN
-            dout <= shifte_right(din,immediat_shift)(31 downto 0) ;
-            cout <= shifte_right(din,immediat_shift)(32) ;
-    ELSIF (shift_asr = '1') THEN
-            dout <= shifte_asr(din,immediat_shift)(31 downto 0) ;
-            cout <= shifte_asr(din,immediat_shift)(32) ;
+            dout <= out_shift_left ;
+            cout <= carry_out_left ;
+    ELSIF (shift_lsr = '1' or shift_asr = '1') THEN
+            dout <= out_shift_right ;
+            cout <= carry_out_right ;
     ELSIF (shift_ror = '1') THEN
-            dout <= shifte_ror(din,immediat_shift)(31 downto 0) ;
-            cout <= shifte_ror(din,immediat_shift)(32) ;
-    ELSIF (shift_rrx = '1') THEN
-            dout <= shifte_rrx(din,cin)(31 downto 0) ;
-            cout <= shifte_rrx(din,cin)(32) ;
+            dout <= out_shift_ror ;
+            cout <= carry_out_ror ;
     END IF ;
 END PROCESS shifter_process_1 ;
 END ARCHITECTURE ;

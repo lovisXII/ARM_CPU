@@ -93,6 +93,7 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
 
     report "dout : " &to_string(dout) ;
     report "cout :" & std_logic'image(cout)(2) ;
+    report"____________________________________________________________" ;
     wait for 4 ns ;
 
     --TEST LSR
@@ -118,6 +119,7 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
 
     report "dout : " &to_string(dout) ;
     report "cout :" & std_logic'image(cout)(2) ;
+    report"____________________________________________________________" ;
     wait for 4 ns ;
 
     --TEST ASR
@@ -142,6 +144,7 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
 
     report "dout : " &to_string(dout) ;
     report "cout :" & std_logic'image(cout)(2) ;
+        report"____________________________________________________________" ;
     wait for 4 ns ;
 
     --TEST ROR
@@ -167,33 +170,13 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
 
     report "dout : " &to_string(dout) ;
     report "cout :" & std_logic'image(cout)(2) ;
+        report"____________________________________________________________" ;
     wait for 4 ns ;
 
-    --TEST RRX
-
-    shift_lsl <= '0' ;
-    shift_lsr <= '0' ;
-    shift_asr <= '0' ;
-    shift_ror <= '0' ;
-    shift_rrx <= '1' ;
-    din <= rand_slv(32) ;
-    shift_val <= rand_slv(5) ;
-    report "shift_lsl :" & std_logic'image(shift_lsl)(2) ;
-    report "shift_lsr :" & std_logic'image(shift_lsr)(2) ;
-    report "shift_asr :" & std_logic'image(shift_asr)(2) ;
-    report "shift_ror :" & std_logic'image(shift_ror)(2) ;
-    report "shift_rrx :" & std_logic'image(shift_rrx)(2) ;
-
-    report "shift_val : " &to_string(shift_val) ;
-
-    report "din : " &to_string(din) ;
-    report "cin :" & std_logic'image(cin)(2) ; 
-
-    report "dout : " &to_string(dout) ;
-    report "cout :" & std_logic'image(cout)(2) ;
-    wait for 4 ns ;
     
     END PROCESS tes_tb_process ;     
      
 
     END ARCHITECTURE ;
+
+    
