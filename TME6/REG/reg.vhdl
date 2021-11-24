@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+---------------------------------PENSER A MODIFIER REG POUR QU IL  LISE ET ECRIVE EN MEME TEMPS-----------------------------------------------
+
+
 entity  Reg is
 	port(
 	-- Write Port 1 prioritaire

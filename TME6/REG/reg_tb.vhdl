@@ -3,7 +3,7 @@ USE IEEE.STD_LOGIC_1164.ALL ;
 USE IEEE.numeric_std.ALL ;
 use ieee.math_real.all;
 
-
+---------------------------------PENSER A MODIFIER REG POUR QU IL  LISE ET ECRIVE EN MEME TEMPS-----------------------------------------------
 entity reg_tb is
 end entity;
 
@@ -257,15 +257,18 @@ architecture behavior of reg_tb is
 	          end loop;
 	        return slv;
 	      END FUNCTION;
-
+	variable read1, read2 : std_logic_vector(3 downto 0) ;
     BEGIN
     if rising_edge(ck) then
+
+    	read2 := rand_slv(4) ;
 		wdata1 <= rand_slv(32);
-		wadr1 <= rand_slv(4);
+		read1 := rand_slv(4) ;
+		wadr1 <= read1;
 		wen1 <= rand_slv(2)(1) ;
 
 		wdata2 <= rand_slv(32);
-		wadr2 <= rand_slv(4);
+		wadr2 <= read2;
 		wen2 <= rand_slv(2)(1) ;
 		
 		wcry <= rand_slv(2)(1) ;
@@ -274,8 +277,8 @@ architecture behavior of reg_tb is
 		wovr <=rand_slv(2)(1) ;
 		cspr_wb <=rand_slv(2)(1) ; --on autorise l'écriture
 
-		radr1 <= (others => '0') ;
-		radr2 <= rand_slv(4) ;
+		radr1 <= read1 ;
+		radr2 <= read2 ;
 		radr3 <= rand_slv(4) ;
 		radr4 <= rand_slv(4) ;
 
