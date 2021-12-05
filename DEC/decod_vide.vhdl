@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+--On ne traitera pas les transferts multiples pour le moment, a voir a la fin
+
+
 entity Decod is
 	port(
 	-- Exec  operands
@@ -13,10 +16,10 @@ entity Decod is
 
 	-- Decod to mem via exec
 			dec_mem_data	: out Std_Logic_Vector(31 downto 0); -- data to MEM
-			dec_mem_dest	: out Std_Logic_Vector(3 downto 0);
-			dec_pre_index 	: out Std_logic;
+			dec_mem_dest	: out Std_Logic_Vector(3 downto 0); -- @ of MEM
+			dec_pre_index 	: out Std_logic; -- say if we do pre index or no []!
 
-			dec_mem_lw		: out Std_Logic;
+			dec_mem_lw		: out Std_Logic; -- type of memory access
 			dec_mem_lb		: out Std_Logic;
 			dec_mem_sw		: out Std_Logic;
 			dec_mem_sb		: out Std_Logic;
@@ -46,7 +49,7 @@ entity Decod is
 			dec_alu_xor		: out Std_Logic;
 
 	-- Exe Write Back to reg
-			exe_res			: in Std_Logic_Vector(31 downto 0);
+			exe_res				: in Std_Logic_Vector(31 downto 0);
 
 			exe_c				: in Std_Logic;
 			exe_v				: in Std_Logic;
@@ -170,8 +173,9 @@ component fifo -- on ne peut pas utiliser de fifo generic car c'est pas synthét
 	);
 end component;
 
-signal cond	: Std_Logic;
-signal cond_en	: Std_Logic;
+signal cond	: Std_Logic ; -- predicat vrai ou pas
+signal condv	: Std_Logic; -- condition valide ou non
+signal operv : Std_Logic;
 
 signal regop_t  : Std_Logic;
 signal mult_t   : Std_Logic;
@@ -226,12 +230,16 @@ signal zero	: Std_Logic;
 signal neg	: Std_Logic;
 signal ovr	: Std_Logic;
 
+-- Setup transition :
+
+signal T1_fetch,T2_fetch,T1_run,T2_run,T3_run,T4_run,T5_run,T6_run,T1_branch,T2_branch : std_logic ;
+
 
 -- DECOD FSM
 
 --Machine a etat :
 
-type state_type is (FECCTH,RUN,MTRANS,LINK,BRANCH) ;
+type state_type is (FETCH,RUN,MTRANS,LINK,BRANCH) ;
 signal cur_state, next_state : state_type ;
 
 begin
@@ -239,10 +247,23 @@ begin
 	dec2exec : fifo	port map (	din() => pre_index, -- fifo à mapper
 
 -- Execution condition
+--ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
+	cond <= '1' when	(if_ir(31 downto 28) = X"0" and zero = '1') 				or
+						(if_ir(31 downto 28) = X"1" and zero ='0') 					or 
+						(if_ir(31 downto 28) = X"2" and cry = '1') 					or
+						(if_ir(31 downto 28) = X"3" and cry = '0')					or
+						(if_ir(31 downto 28) = X"4" and neg = '1')					or
+						(if_ir(31 downto 28) = X"5" and neg = '0')					or
+						(if_ir(31 downto 28) = X"6" and ovr = '1')					or
+						(if_ir(31 downto 28) = X"7" and ovr ='0')					or
+						(if_ir(31 downto 28) = X"8" and (cry ='1' and zero = '0')) 	or
+						(if_ir(31 downto 28) = X"9" and (cry = '0' or zero ='1')) 	or
+						(if_ir(31 downto 28) = X"A" and (neg = '0' or zero ='1')) 	or
+						(if_ir(31 downto 28) = X"B" and neg = '1' and zero ='0' )	or
+						(if_ir(31 downto 28) = X"C" and neg ='0' and zero ='0')		or
+						(if_ir(31 downto 28) = X"D" and (neg = '1' or zero ='1'))	or
+						(if_ir(31 downto 28) = X"E") else '0' ;
 
-	cond <= '1' when	(if_ir(31 downto 28) = X"0" and zero = '1') or
-
-							(if_ir(31 downto 28) = X"E") else '0';
 
 	condv <= '1'		when if_ir(31 downto 28) = X"E" else
 				reg_cznv	when (if_ir(31 downto 28) = X"0" or
@@ -262,56 +283,58 @@ begin
 
 	and_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"0" else '0';
 
+
+--Machine a état :
+
+--Gestion des transitions :
+
+	T1_fetch <= not(dec2if_empty) ; 			-- on peut charger de nouvelles instructions
+	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
+	T1_run <= if2dec_empty or not(dec2exe_empty) or not(condv) ; -- 
+	T2_run <= not(cond) ; 						-- condition annulée -> annulation instruction
+	T3_run <= cond ; 							-- condition reussi et instruction tourne
+	T4_run <= bl_i ; 							-- branchement et link
+	T5_run <= b_i ; 							-- branchement et pas de link
+	T6_run <= stm_i or ldm_i ; 					-- acces multiples
+	T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
+	T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
+
 	Machine_etat : process(ck)
 	begin
-	
-	--Machine a état :
-	
 		if(rising_edge(ck)) then
 			if(reset_n = '0') then
-				cur_state <= FECTH ;
+				cur_state <= FETCH ;
 			else 
 				cur_state <= next_state ;
 		end if;
 	end process ;
-	Machine_etat_transition : process(entree) -- qu'est ce qui definiti les transisitions ?
+
+	Machine_etat_transition : process(T1_fetch,T2_fetch,T1_run,T2_run,T3_run,T4_run,T5_run,T6_run,T1_branch,T2_branch,cur_state) -- qu'est ce qui definiti les transisitions ?
 		begin
 				case cur_state is
-				when FETCH => if(T1 = '1') then
-								next_state <= FECTH ;
-							elsif(T2 = '1') then
+				when FETCH => if(T1_fetch = '1') then 
+								next_state <= FETCH ;
+							elsif(T2_fetch = '1') then
 								next_state <=RUN ;
-				when RUN =>	if(T1 = '1' or T2 = '1' or T3 = '1') then 
+				when RUN =>	if(T1_run = '1' or T2_run = '1' or T3_run = '1') then 
 								next_state <= RUN ;
-							elsif(T4 = '1') then
+							elsif(T4_run = '1') then
 								next_state <= LINK ;
-							elsif(T6 = '1') then
+							elsif(T5_run = '1') then
+								next_state <= BRANCH ;
+							elsif(T6_run = '1') then
 								next_state <= MTRANS ;
 
-				when MTRANS => if(T1 = '1') then
-									next_state <= T1 ;
-								elsif(T3 = '1') then
-									next_state <= BRANCH ;
-				when LINK => if(T1 = '1') then
-								next_state <= BRANCH ;
-				when BRANCH => if(T3 = '1') then
-									next_state <= FECTH ;
-								elsif(T2 ='1') then
+				when MTRANS => next_state <= IFETCH ;
+				when LINK => next_state <= BRANCH ;
+				--sur le truc du prof T3 est notre T1
+				when BRANCH => --if(T3_branch = '1') then ceci est une optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
+								--	next_state <= BRANCH ;
+								if(T2 ='1') then -- dans le cas ou le branchement échoue on va a run pour executer les inst séquentiellement
 									next_state <= RUN ;
-								elsif (T1 = '1') then
-									next_state <= BRANCH ;
+								elsif (T1 = '1') then  
+									next_state <= FETCH ;
 									
 		end process ;
-end Behavior;
+	end Behavior;
 
---Traduction des conditions de FETCH :
-T1 : fifo vers IFECTH est pleine :
-if(dec2if_empty = '1')
-T2 : 1ere valeur de pc a pu être écrite :
-
--- Traduction des conditions de RUN :
-T1 : 
-if(if2dec_empty = '1' or dec2exe_empty = '1' )
-T2 :
-T3 :
-T4 :
