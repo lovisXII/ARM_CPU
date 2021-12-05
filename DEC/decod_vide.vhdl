@@ -265,10 +265,24 @@ begin
 						(if_ir(31 downto 28) = X"E") else '0' ;
 
 
-	condv <= '1'		when if_ir(31 downto 28) = X"E" else
-				reg_cznv	when (if_ir(31 downto 28) = X"0" or
+	condv <= '1' 			when if_ir(31 downto 28) = X"E" or
+				reg_cznv	and( 
+								(if_ir(31 downto 28) = X"0") 	or
+								(if_ir(31 downto 28) = X"0" ) 	or
+								(if_ir(31 downto 28) = X"1" ) 	or 
+								(if_ir(31 downto 28) = X"2" ) 	or
+								(if_ir(31 downto 28) = X"3" ) 	or
+								(if_ir(31 downto 28) = X"4" ) 	or
+								(if_ir(31 downto 28) = X"5" ) 	or
+								(if_ir(31 downto 28) = X"8" ) 	or
+								(if_ir(31 downto 28) = X"9" )
+								) or
+				reg_vv  and (
+								(if_ir(31 downto 28) = X"6" and ovr = '1')	or
+								(if_ir(31 downto 28) = X"7" and ovr ='0')
+							)	
+				else (reg_cznv and reg_vv) ;		
 
-				reg_czn and reg_vv;
 --Decodage des instructions : 
 -- Instructions calcul
 -- Instructions branchement
