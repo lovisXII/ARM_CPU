@@ -346,9 +346,9 @@ begin
 
 -- DECODING s BIT + REGISTER :
 
-	dec_flag_wb 	<= '1' 					when if_ir(20) 	= '1' else 0 ; 	--setup of s bit from opcode, it says if we need to wb flags
-	radr1_signal 	<= if_ir(19 downto 16) when regop_t 	= '1' ; 		--setup of Rn
-	dec_exe_wb 		<= if_ir(15 downto 12) when regop_t 	='1' ; 			--setup of Rd
+	dec_flag_wb 	<= '1' 					when if_ir(20) 	= 	'1' else 0 ; 	--setup of s bit from opcode, it says if we need to wb flags
+	radr1_signal 	<= if_ir(19 downto 16) 	when regop_t 	= 	'1' ; 			--setup of Rn
+	dec_exe_wb 		<= if_ir(15 downto 12) 	when regop_t 	=	'1' ; 			--setup of Rd
 
 -- DECODING op2 :
 
@@ -376,14 +376,14 @@ begin
 
 	-- Case 2 : regop_t_is_immediat_type = '1' (I = 1) 
 
-	dec_shift_lsl <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_lsr <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_asr <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_ror <= '1' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_rrx <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_lsl 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_lsr 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_asr 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_ror 	<= '1' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_rrx 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
 
-	dec_shift_val <= (if_ir(11 downto 8) & '0') when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- Valeur de rotation multipliée par 2
-	dec_op2 <= X"000000" & if_ir(7 downto 0)  when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- l'opérande 2 est un immédiat 8 bit étendu sur 32
+	dec_shift_val 	<= (if_ir(11 downto 8) & '0') 		when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- Valeur de rotation multipliée par 2
+	dec_op2 		<= X"000000" & if_ir(7 downto 0)  	when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- l'opérande 2 est un immédiat 8 bit étendu sur 32
 
 -------------------------------------------------------------------------------
 
@@ -391,8 +391,8 @@ begin
 --DECODING BRANCHEMENT INSTRUCTION :
 -- Dans le cas d'un branchement, on regarde si la condition est vraie, si c'est le cas on invalide pc et on change son calcul par l'offset ;
 
-	bl_i <= '1' when if_ir(24) = '1' and branch_t ='1' else '0';
-	b_i <= '1' when if_ir(24) = '0' and branch_t ='1' else '0';
+	bl_i 	<= '1' when if_ir(24) = '1' and branch_t ='1' else '0';
+	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0';
 
 	shift_val <= "00010" when branch_t = '1' ; -- on va multiplier l'offset par 4 
 	
