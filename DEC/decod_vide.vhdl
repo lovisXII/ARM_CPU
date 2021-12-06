@@ -49,14 +49,14 @@ entity Decod is
 			dec_alu_xor		: out Std_Logic;
 
 	-- Exe Write Back to reg
-			exe_res				: in Std_Logic_Vector(31 downto 0);
+			exe_res			: in Std_Logic_Vector(31 downto 0);
 
-			exe_c				: in Std_Logic;
-			exe_v				: in Std_Logic;
-			exe_n				: in Std_Logic;
-			exe_z				: in Std_Logic;
+			exe_c			: in Std_Logic;
+			exe_v			: in Std_Logic;
+			exe_n			: in Std_Logic;
+			exe_z			: in Std_Logic;
 
-			exe_dest			: in Std_Logic_Vector(3 downto 0); -- Rd destination
+			exe_dest		: in Std_Logic_Vector(3 downto 0); -- Rd destination
 			exe_wb			: in Std_Logic; -- Rd destination write back
 			exe_flag_wb		: in Std_Logic; -- CSPR modifiy
 
@@ -73,11 +73,11 @@ entity Decod is
 
 	-- Mem Write back to reg
 			mem_res			: in Std_Logic_Vector(31 downto 0);
-			mem_dest			: in Std_Logic_Vector(3 downto 0);
+			mem_dest		: in Std_Logic_Vector(3 downto 0);
 			mem_wb			: in Std_Logic;
 			
 	-- global interface
-			ck					: in Std_Logic;
+			ck				: in Std_Logic;
 			reset_n			: in Std_Logic;
 			vdd				: in bit;
 			vss				: in bit);
@@ -104,49 +104,49 @@ component Reg
 		wzero			: in Std_Logic;
 		wneg			: in Std_Logic;
 		wovr			: in Std_Logic;
-		cspr_wb		: in Std_Logic;
+		cspr_wb			: in Std_Logic;
 		
 	-- Read Port 1 32 bits
-		rdata1		: out Std_Logic_Vector(31 downto 0);
+		rdata1			: out Std_Logic_Vector(31 downto 0);
 		radr1			: in Std_Logic_Vector(3 downto 0);
-		rvalid1		: out Std_Logic;
+		rvalid1			: out Std_Logic;
 
 	-- Read Port 2 32 bits
-		rdata2		: out Std_Logic_Vector(31 downto 0);
+		rdata2			: out Std_Logic_Vector(31 downto 0);
 		radr2			: in Std_Logic_Vector(3 downto 0);
-		rvalid2		: out Std_Logic;
+		rvalid2			: out Std_Logic;
 
 	-- Read Port 3 5 bits (for shift)
-		rdata3		: out Std_Logic_Vector(31 downto 0);
+		rdata3			: out Std_Logic_Vector(31 downto 0);
 		radr3			: in Std_Logic_Vector(3 downto 0);
-		rvalid3		: out Std_Logic;
+		rvalid3			: out Std_Logic;
 
 	-- read CSPR Port
-		cry			: out Std_Logic;
+		cry				: out Std_Logic;
 		zero			: out Std_Logic;
-		neg			: out Std_Logic;
-		ovr			: out Std_Logic;
+		neg				: out Std_Logic;
+		ovr				: out Std_Logic;
 		
 		reg_cznv		: out Std_Logic;
-		reg_vv		: out Std_Logic;
+		reg_vv			: out Std_Logic;
 
 	-- Invalidate Port 
-		inval_adr1	: in Std_Logic_Vector(3 downto 0);
-		inval1		: in Std_Logic;
+		inval_adr1		: in Std_Logic_Vector(3 downto 0);
+		inval1			: in Std_Logic;
 
-		inval_adr2	: in Std_Logic_Vector(3 downto 0);
-		inval2		: in Std_Logic;
+		inval_adr2		: in Std_Logic_Vector(3 downto 0);
+		inval2			: in Std_Logic;
 
-		inval_czn	: in Std_Logic;
-		inval_ovr	: in Std_Logic;
+		inval_czn		: in Std_Logic;
+		inval_ovr		: in Std_Logic;
 
 	-- PC
-		reg_pc		: out Std_Logic_Vector(31 downto 0);
-		reg_pcv		: out Std_Logic;
-		inc_pc		: in Std_Logic;
+		reg_pc			: out Std_Logic_Vector(31 downto 0);
+		reg_pcv			: out Std_Logic;
+		inc_pc			: in Std_Logic;
 	
 	-- global interface
-		ck					: in Std_Logic;
+		ck				: in Std_Logic;
 		reset_n			: in Std_Logic;
 		vdd				: in bit;
 		vss				: in bit);
@@ -177,12 +177,12 @@ signal cond	: Std_Logic ; -- predicat vrai ou pas
 signal condv	: Std_Logic; -- condition valide ou non
 signal operv : Std_Logic;
 
-signal regop_t  : Std_Logic;
-signal mult_t   : Std_Logic;
+signal regop_t  : Std_Logic; -- traitement de données ?
+signal mult_t   : Std_Logic; --multiplication
 signal swap_t   : Std_Logic; -- swap entre un registre et une @ : load+store en même temps
-signal trans_t  : Std_Logic;
-signal mtrans_t : Std_Logic;
-signal branch_t : Std_Logic;
+signal trans_t  : Std_Logic; -- transfert memoire
+signal mtrans_t : Std_Logic; -- transfert multiple
+signal branch_t : Std_Logic; -- branchement
 
 -- regop instructions
 signal and_i  : Std_Logic;
@@ -201,6 +201,10 @@ signal orr_i  : Std_Logic;
 signal mov_i  : Std_Logic;
 signal bic_i  : Std_Logic;
 signal mvn_i  : Std_Logic;
+
+-- regop gestion of immediat bit
+
+signal regop_t_is_immediat_type : std_logic ;
 
 -- mult instruction
 signal mul_i  : Std_Logic;
@@ -232,7 +236,16 @@ signal ovr	: Std_Logic;
 
 -- Setup transition :
 
-signal T1_fetch,T2_fetch,T1_run,T2_run,T3_run,T4_run,T5_run,T6_run,T1_branch,T2_branch : std_logic ;
+ signal T1_fetch 	: std_logic ;
+ signal T2_fetch 	: std_logic ;
+ signal T1_run 		: std_logic ;
+ signal T2_run 		: std_logic ;
+ signal T3_run 		: std_logic ;
+ signal T4_run 		: std_logic ;
+ signal T5_run 		: std_logic ;
+ signal T6_run 		: std_logic ;
+ signal T1_branch 	: std_logic ;
+ signal T2_branch 	: std_logic ;
 
 
 -- DECOD FSM
@@ -291,12 +304,56 @@ begin
  
 -- decod instruction type
 
-	regop_t <= '1' when	if_ir(27 downto 26) = 
+	regop_t 	<= '1' when	if_ir(27 downto 26) = 	"00" ; 
+	mult_t 		<= '1' when if_ir(27 downto 26) =	"01" ;
+	mtrans_t 	<= '1' when if_ir(27 downto 25) = 	"100" ;
+	branch_t 	<= '1' when if_ir(27 downto 25) =	"101" ;
+	--mult_t <= '1' when if_ir(27 downto 22 )="000000"; problème avec regop_t car si I et le registre source valent 0 dans l'opcode d'une inst de traitement de données ca fait la meme chose
+
+--DECODING DATA PROCESSING INSTRUCTIONS
+
+-- Is it immediat type :
+
+	regop_t_is_immediat_type <= '1' when if_ir(25) ='1' else 0 ;
 
 -- decod regop opcode
 
 	and_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"0" else '0';
+	eor_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"1" else '0';
+	sub_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"2" else '0';
+	rsb_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"3" else '0';
+	add_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"4" else '0';
+	adc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"5" else '0';
+	sbc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"6" else '0';
+	rsc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"7" else '0';
+	tst_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"8" else '0';
+	teq_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"9" else '0';
+	cmp_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"A" else '0';
+	cmn_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"B" else '0';
+	orr_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"C" else '0';
+	mov_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"D" else '0';
+	bic_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"E" else '0';
+	mvn_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"F" else '0';
 
+-- DECODING s BIT + REGISTER :
+
+	dec_flag_wb <= '1' when if_ir(20) = '1' else 0 ; --setup of s bit from opcode, it says if we need to wb flags
+
+	dec_exe_wb <= if_ir(15 downto 12) when regop_t ='1' ; --setup of rd
+-------------------------------------------------------------------------------
+
+
+--DECODING BRANCHEMENT INSTRUCTION :
+
+-------------------------------------------------------------------------------
+
+--DECODING SIMPLE TRANSFERT INSTRUCTION :
+
+-------------------------------------------------------------------------------
+
+--DECODING MULTIPLE TRANSFERT INSTRUCTION :
+
+-------------------------------------------------------------------------------
 
 --Machine a état :
 
