@@ -64,8 +64,8 @@ entity  Reg is
 
 	-- PC
 		reg_pc		: out Std_Logic_Vector(31 downto 0);
-		reg_pcv		: out Std_Logic;
-		inc_pc		: in Std_Logic;
+		reg_pcv		: out Std_Logic; -- port de validité de pc
+		inc_pc		: in Std_Logic; -- si = '1' on incremente pc normalement, sinon on lui ajoute l'offset d'un branch
 	
 	-- global interface
 		ck				: in Std_Logic;

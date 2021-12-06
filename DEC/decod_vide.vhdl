@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 --On ne traitera pas les transferts multiples pour le moment, a voir a la fin
-
+-- Dans le décodage des inst de traitement de données il manque les else
 
 entity Decod is
 	port(
@@ -247,6 +247,17 @@ signal ovr	: Std_Logic;
  signal T1_branch 	: std_logic ;
  signal T2_branch 	: std_logic ;
 
+ -- Read Port of reg :
+
+ signal radr1_signal : std_logic ;
+ signal radr2_signal : std_logic ;
+ signal radr3_signal : std_logic ;
+ signal radr4_signal : std_logic ;
+
+ --Gestion de pc :
+ 
+ signal inc_pc_signal : std_logic ;
+
 
 -- DECOD FSM
 
@@ -261,6 +272,7 @@ begin
 
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
+
 	cond <= '1' when	(if_ir(31 downto 28) = X"0" and zero = '1') 				or
 						(if_ir(31 downto 28) = X"1" and zero ='0') 					or 
 						(if_ir(31 downto 28) = X"2" and cry = '1') 					or
@@ -296,13 +308,10 @@ begin
 							)	
 				else (reg_cznv and reg_vv) ;		
 
---Decodage des instructions : 
--- Instructions calcul
--- Instructions branchement
--- Instructions Mémoire
--- Instructions Mémoire multiples
+--INSTRUCTION DECODING : 
+
  
--- decod instruction type
+-- DECOD INSTRUCTION TYPE
 
 	regop_t 	<= '1' when	if_ir(27 downto 26) = 	"00" ; 
 	mult_t 		<= '1' when if_ir(27 downto 26) =	"01" ;
@@ -337,14 +346,56 @@ begin
 
 -- DECODING s BIT + REGISTER :
 
-	dec_flag_wb <= '1' when if_ir(20) = '1' else 0 ; --setup of s bit from opcode, it says if we need to wb flags
+	dec_flag_wb 	<= '1' 					when if_ir(20) 	= '1' else 0 ; 	--setup of s bit from opcode, it says if we need to wb flags
+	radr1_signal 	<= if_ir(19 downto 16) when regop_t 	= '1' ; 		--setup of Rn
+	dec_exe_wb 		<= if_ir(15 downto 12) when regop_t 	='1' ; 			--setup of Rd
 
-	dec_exe_wb <= if_ir(15 downto 12) when regop_t ='1' ; --setup of rd
+-- DECODING op2 :
+
+	-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
+	
+	radr2_signal <= if_ir(3 downto 0) when (regop_t = '1' and regop_t_is_immediat_type = '0') ; --setup of Rm
+
+	-- on associe les shifts value quand on est de type regop_t, quand le bit 4 vaut 0, et quand on est de type immédiat
+	
+	dec_shift_lsl <= '1' when if_ir(6 downto 5) = "00" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
+	dec_shift_lsr <= '1' when if_ir(6 downto 5) = "01" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
+	dec_shift_asr <= '1' when if_ir(6 downto 5) = "10" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
+	dec_shift_ror <= '1' when if_ir(6 downto 5) = "11" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
+	dec_shift_rrx <= '1' when if_ir(6 downto 5) = "11" and (if_ir(11 downto 7) = "00001" and regop_t = '1' and regop_t_is_immediat_type = '0') ;
+	
+	-- Case 1.a : bit 4 = 0 :
+
+	dec_shift_val <= if_ir(11 downto 7) when if_ir(4) = '0' and regop_t = '1' and regop_t_is_immediat_type = '0' ; -- setup shift_val
+
+	-- Case 1.b : bit 4 = 1
+
+	radr3_signal <= if_ir(11 downto 8) when regop_t = '1' and regop_t_is_immediat_type = '0' and if_ir(4) = '1' ; -- setup Rs
+
+
+
+	-- Case 2 : regop_t_is_immediat_type = '1' (I = 1) 
+
+	dec_shift_lsl <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_lsr <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_asr <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_ror <= '1' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+	dec_shift_rrx <= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
+
+	dec_shift_val <= (if_ir(11 downto 8) & '0') when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- Valeur de rotation multipliée par 2
+	dec_op2 <= X"000000" & if_ir(7 downto 0)  when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- l'opérande 2 est un immédiat 8 bit étendu sur 32
+
 -------------------------------------------------------------------------------
 
 
 --DECODING BRANCHEMENT INSTRUCTION :
+-- Dans le cas d'un branchement, on regarde si la condition est vraie, si c'est le cas on invalide pc et on change son calcul par l'offset ;
 
+	bl_i <= '1' when if_ir(24) = '1' and branch_t ='1' else '0';
+	b_i <= '1' when if_ir(24) = '0' and branch_t ='1' else '0';
+
+	shift_val <= "00010" when branch_t = '1' ; -- on va multiplier l'offset par 4 
+	
 -------------------------------------------------------------------------------
 
 --DECODING SIMPLE TRANSFERT INSTRUCTION :
