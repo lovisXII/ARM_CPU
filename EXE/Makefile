@@ -22,13 +22,16 @@ run :
 	$(GHDL) -c $(GHDLFLAGS) -r exec_tb $(GHDLRUNFLAGS)
 
 # Targets to analyze libraries
-analyse: exec_tb.vhdl exec.vhdl shifter.vhdl ALU.vhdl multiplexer.vhdl shift_left.vhdl shift_right.vhdl ror.vhdl
+analyse: exec_tb.vhdl exec.vhdl shifter.vhdl ALU.vhdl multiplexer.vhdl shift_left.vhdl shift_right.vhdl ror.vhdl multiplexer.vhdl fifo_72b.vhdl
 	$(GHDL) -a $(GHDLFLAGS) exec_tb.vhdl
 	$(GHDL) -a $(GHDLFLAGS) exec.vhdl
 	$(GHDL) -a $(GHDLFLAGS) shifter.vhdl
 	$(GHDL) -a $(GHDLFLAGS) shift_left.vhdl
 	$(GHDL) -a $(GHDLFLAGS) shift_right.vhdl
 	$(GHDL) -a $(GHDLFLAGS) ror.vhdl
+	$(GHDL) -a $(GHDLFLAGS) multiplexer.vhdl
+	$(GHDL) -a $(GHDLFLAGS) fifo_72b.vhdl
+	$(GHDL) -a $(GHDLFLAGS) ALU.vhdl
 
 clean: 
 	rm -f *.cf *.vst *.vbe

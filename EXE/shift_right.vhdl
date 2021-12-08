@@ -13,8 +13,8 @@ ENTITY Shift_right IS
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic;
-    vdd: IN Std_logic;
-    vss: IN Std_logic
+    vdd       : IN bit;
+    vss       : IN bit
     );
 END Shift_right;
 

@@ -4,8 +4,7 @@
 
 LIBRARY IEEE ;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.NUMERIC_STD.ALL ;
-USE IEEE.MATH_REAL.ALL ;
+
 
 ENTITY Shifter IS
 	PORT(
@@ -28,6 +27,7 @@ ARCHITECTURE behavior OF Shifter IS
     signal out_shift_left, out_shift_right, out_shift_ror : std_logic_vector(31 downto 0) ;
     signal carry_out_left, carry_out_right, carry_out_ror : std_logic ;
 
+
     component shift_left
     port (
     cin :               in std_logic_vector(31 downto 0) ;
@@ -44,6 +44,8 @@ ARCHITECTURE behavior OF Shifter IS
     shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
+    vdd       : in bit ;
+    vss       : in bit ;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic
     );    
@@ -75,7 +77,9 @@ BEGIN
      cin => cin ,
      shift_val => shift_val, 
      dout => out_shift_right, 
-     cout => carry_out_right
+     cout => carry_out_right,
+     vdd => vdd, 
+     vss => vss
      );    
 
     shift_ror0 : ror_entity port map
