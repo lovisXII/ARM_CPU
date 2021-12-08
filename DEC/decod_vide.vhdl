@@ -314,10 +314,19 @@ begin
 						(if_ir(31 downto 28) = X"7" and ovr ='0')					or
 						(if_ir(31 downto 28) = X"8" and (cry ='1' and zero = '0')) 	or
 						(if_ir(31 downto 28) = X"9" and (cry = '0' or zero ='1')) 	or
-						(if_ir(31 downto 28) = X"A" and (neg = '0' or zero ='1')) 	or
-						(if_ir(31 downto 28) = X"B" and neg = '1' and zero ='0' )	or
-						(if_ir(31 downto 28) = X"C" and neg ='0' and zero ='0')		or
-						(if_ir(31 downto 28) = X"D" and (neg = '1' or zero ='1'))	or
+
+						(if_ir(31 downto 28) = X"A" and (neg = '0' or zero ='1') and ovr = '0') 	or
+						(if_ir(31 downto 28) = X"B" and neg = '1' and zero ='0' and ovr = '0')		or
+						(if_ir(31 downto 28) = X"C" and neg ='0' and zero ='0' and ovr = '0')		or
+						(if_ir(31 downto 28) = X"D" and (neg = '1' or zero ='1') and ovr = '0')		or
+						--handle overflows for comparison : 
+						--if result is positive or zero, the we did -X - (+Y), so -X < Y
+						--if result is negative, then we did X - (-Y), so X > -Y
+						(if_ir(31 downto 28) = X"A" and neg = '0' and ovr = '1') 					or
+						(if_ir(31 downto 28) = X"B" and (neg = '1' or zero = '1') and ovr = '1')	or
+						(if_ir(31 downto 28) = X"C" and neg ='0' and ovr = '1')						or
+						(if_ir(31 downto 28) = X"D" and (neg = '1' or zero = '1') and ovr = '1')	or
+
 						(if_ir(31 downto 28) = X"E") else '0' ;
 
 
