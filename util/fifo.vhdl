@@ -1,13 +1,11 @@
 LIBRARY ieee;
 use ieee.std_logic_1164.all;
 
-
-
 ENTITY fifo IS
-	generic(bits : integer; slots : integer);
+	generic  (width : integer);
 	PORT(
-		din		: in std_logic_vector(bits-1 downto 0);
-		dout		: out std_logic_vector(bits-1 downto 0);
+		din		: in std_logic_vector(width -1 downto 0);
+		dout		: out std_logic_vector(width -1 downto 0);
 
 		-- commands
 		push		: in std_logic;
@@ -25,27 +23,33 @@ ENTITY fifo IS
 END fifo;
 
 architecture dataflow of fifo is
-type FIFO is array (slots-1 downto 0) of std_logic_vector(bits-1 downto 0); --array of std_logic_vector (tableau de tableau quoi)
--- permet de stocker les résultats de l'ALU en attendant que MEM finisse son taf
-signal fifo_d	: FIFO;
+
+signal fifo_d	: std_logic_vector(width -1 downto 0);
 signal fifo_v	: std_logic;
+
+-- 	une fifo est pleine quand :
+--	elle est valide et qu'on ne pop pas 
+--	On considère qu'une fifo est valide quand il y a de la donnée et que l'on sait quelle est cette donnée
 
 begin
 
 	process(ck)
 		begin
 		if rising_edge(ck) then
-			-- Valid bit 
-			if reset_n = '0' then
+			-- Valid bit
+			if reset_n = '0' then -- reset la fifo => on la rend invalide
 				fifo_v <= '0';
 			else
-				if fifo_v = '0' then
-					if push = '1' then
-						fifo_v <= '1';
+			--quand y a de la merde dans la fifo, ie quand fifo_v = '0' ie qu'on ne compte pas utilisé ce qu'il y a dedans
+				
+				if fifo_v = '0' then -- si la fifo n'est aps valide et que push = 1
+				
+					if push = '1' then -- si on push la fifo devient valide
+						fifo_v <= '1'; -- elle devient valide
 					else
 						fifo_v <= '0';
 					end if;
-				else
+				else --quand la fifo est valide ie qu'on sait et on utilise ce qu'il y a dedans
 					if pop = '1' then
 						if push = '1' then
 							fifo_v <= '1';

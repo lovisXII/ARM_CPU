@@ -265,10 +265,25 @@ signal ovr	: Std_Logic;
 
 type state_type is (FETCH,RUN,MTRANS,LINK,BRANCH) ;
 signal cur_state, next_state : state_type ;
-
+signal dec_out : std_logic_vector(3)
 begin
 
-	dec2exec : fifo	port map (	din() => pre_index, -- fifo à mapper
+	dec2exec : fifo	port map (	
+	din		: in std_logic_vector(WIDTH-1 downto 0);
+	dout		: out std_logic_vector(WIDTH-1 downto 0);
+
+	-- commands
+	push		: in std_logic;
+	pop		: in std_logic;
+
+	-- flags
+	full		: out std_logic;
+	empty		: out std_logic;
+
+	reset_n	: in std_logic;
+	ck			: in std_logic;
+	vdd		: in bit;
+	vss		: in bit)
 
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
