@@ -473,12 +473,12 @@ begin
 	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
 	T1_run <= if2dec_empty or not(dec2exe_empty) or not(condv) ; -- 
 	T2_run <= not(cond) ; 						-- condition annulée -> annulation instruction
-	T3_run <= cond ; 							-- condition reussi et instruction tourne
-	T4_run <= bl_i ; 							-- branchement et link
-	T5_run <= b_i ; 							-- branchement et pas de link
-	T6_run <= stm_i or ldm_i ; 					-- acces multiples
-	T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
-	T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
+	T3_run <= cond and not(bl_i or b_i or stm_i or ldm_i); 							-- condition reussi et instruction tourne
+	T4_run <= bl_i and cond; 							-- branchement et link
+	T5_run <= b_i and cond; 							-- branchement et pas de link
+	T6_run <= (stm_i or ldm_i) and cond ; 					-- acces multiples
+	--T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
+	--T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
 
 	Machine_etat : process(ck)
 	begin
@@ -512,36 +512,39 @@ begin
 				when LINK => next_state <= BRANCH ;
 				--sur le truc du prof T3 est notre T1
 				when BRANCH => --if(T3_branch = '1') then ceci est une optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
-								--	next_state <= BRANCH ;
-								if(T2 ='1') then -- dans le cas ou le branchement échoue on va a run pour executer les inst séquentiellement
-									next_state <= RUN ;
-								elsif (T1 = '1') then  
 									next_state <= FETCH ;
-								end if;
 		end case ;							
 		end process ;
 -------------------------------------------------------------------------------
 
 --Actions for state FETCH :
 
+--		-> Dans tous les cas, envoyer une instruction dans dec2if
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 
 --Actions for state RUN :
-
+--à toujours faire : envoyer valeur PC si dec2if pas pleine
+--		-> T1 rien d'autre
+--		-> T2 pop une nouvelle instruction de if2dec
+--		-> T3 envoyer l'instruction vers EXE et pop une nouvelle instruction de if2dec
+-- 		-> T4 sauvergarder PC dans r14, pas de push dans EXE ou pop de IF
+-- 		-> T5 calcul de la nouvelle adresse, vider dec2if, pas de pop mais un push
+--		-> T6 ...
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 
 --Actions for state LINK :
+-- 		-> calcul de la nouvelle adresse, vider dec2if, pas de pop mais un push
 
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 
 --Actions for state BRANCH :
-
+--		-> on vide if2dec
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
