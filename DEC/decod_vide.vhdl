@@ -487,6 +487,7 @@ begin
 				cur_state <= FETCH ;
 			else 
 				cur_state <= next_state ;
+			end if;
 		end if;
 	end process ;
 
@@ -497,6 +498,7 @@ begin
 								next_state <= FETCH ;
 							elsif(T2_fetch = '1') then
 								next_state <=RUN ;
+							end if;
 				when RUN =>	if(T1_run = '1' or T2_run = '1' or T3_run = '1') then 
 								next_state <= RUN ;
 							elsif(T4_run = '1') then
@@ -505,7 +507,7 @@ begin
 								next_state <= BRANCH ;
 							elsif(T6_run = '1') then
 								next_state <= MTRANS ;
-
+							end if ;
 				when MTRANS => next_state <= IFETCH ;
 				when LINK => next_state <= BRANCH ;
 				--sur le truc du prof T3 est notre T1
@@ -515,7 +517,8 @@ begin
 									next_state <= RUN ;
 								elsif (T1 = '1') then  
 									next_state <= FETCH ;
-									
+								end if;
+		end case ;							
 		end process ;
 	end Behavior;
 
