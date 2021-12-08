@@ -204,7 +204,7 @@ signal mvn_i  : Std_Logic;
 
 -- regop & trans gestion of immediat bit
 
-signal regop_t_is_immediat_type : std_logic ;
+
 signal trans_t_is_immediat_type : std_logic ;
 
 -- mult instruction
@@ -254,6 +254,16 @@ signal ovr	: Std_Logic;
  signal radr2_signal : std_logic ;
  signal radr3_signal : std_logic ;
  signal radr4_signal : std_logic ;
+
+ signal rdata1_signal : std_logic ;
+ signal rdata2_signal : std_logic ;
+ signal rdata3_signal : std_logic ;
+ signal rdata4_signal : std_logic ;
+
+ signal rv1_signal : std_logic ;
+ signal rv2_signal : std_logic ;
+ signal rv3_signal : std_logic ;
+ signal rv4_signal : std_logic ;
 
 -- Write Port of reg :
 
@@ -353,17 +363,13 @@ begin
  
 -- DECOD INSTRUCTION TYPE
 
-	regop_t 	<= '1' when	if_ir(27 downto 26) = 	"00" ; 
-	mult_t 		<= '1' when if_ir(27 downto 26) =	"01" ;
-	mtrans_t 	<= '1' when if_ir(27 downto 25) = 	"100" ;
-	branch_t 	<= '1' when if_ir(27 downto 25) =	"101" ;
+	regop_t 	<= '1' when	if_ir(27 downto 26) = 	"00"  else '0'; 
+	mult_t 		<= '1' when if_ir(27 downto 26) =	"01"  else '0';
+	mtrans_t 	<= '1' when if_ir(27 downto 25) = 	"100" else '0';
+	branch_t 	<= '1' when if_ir(27 downto 25) =	"101" else '0';
 	--mult_t <= '1' when if_ir(27 downto 22 )="000000"; problème avec regop_t car si I et le registre source valent 0 dans l'opcode d'une inst de traitement de données ca fait la meme chose
 
 --DECODING DATA PROCESSING INSTRUCTIONS
-
--- Is it immediat type :
-
-	regop_t_is_immediat_type <= '1' when if_ir(25) ='1' else 0 ;
 
 -- decod regop opcode
 
@@ -383,49 +389,6 @@ begin
 	mov_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"D" else '0';
 	bic_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"E" else '0';
 	mvn_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"F" else '0';
-
--- DECODING s BIT + REGISTER :
-
-	dec_flag_wb 	<= '1' 					when if_ir(20) 	= 	'1' else 0 ; 	--setup of s bit from opcode, it says if we need to wb flags
-	radr1_signal 	<= if_ir(19 downto 16) 	when regop_t 	= 	'1' ; 			--setup of Rn
-	dec_exe_wb 		<= if_ir(15 downto 12) 	when regop_t 	=	'1' ; 			--setup of Rd
-
--- DECODING op2 :
-
-	-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
-	
-	radr2_signal <= if_ir(3 downto 0) when (regop_t = '1' and regop_t_is_immediat_type = '0') ; --setup of Rm
-
-	-- on associe les shifts value quand on est de type regop_t, quand le bit 4 vaut 0, et quand on est de type immédiat
-	
-	dec_shift_lsl <= '1' when if_ir(6 downto 5) = "00" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
-	dec_shift_lsr <= '1' when if_ir(6 downto 5) = "01" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
-	dec_shift_asr <= '1' when if_ir(6 downto 5) = "10" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
-	dec_shift_ror <= '1' when if_ir(6 downto 5) = "11" and ( regop_t = '1' and regop_t_is_immediat_type = '0') ;
-	dec_shift_rrx <= '1' when if_ir(6 downto 5) = "11" and (if_ir(11 downto 7) = "00001" and regop_t = '1' and regop_t_is_immediat_type = '0') ;
-	
-	-- Case 1.a : bit 4 = 0 :
-
-	dec_shift_val <= if_ir(11 downto 7) when if_ir(4) = '0' and regop_t = '1' and regop_t_is_immediat_type = '0' ; -- setup shift_val
-
-	-- Case 1.b : bit 4 = 1
-
-	radr3_signal <= if_ir(11 downto 8) when regop_t = '1' and regop_t_is_immediat_type = '0' and if_ir(4) = '1' ; -- setup Rs
-
-
-
-	-- Case 2 : regop_t_is_immediat_type = '1' (I = 1) 
-
-	dec_shift_lsl 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_lsr 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_asr 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_ror 	<= '1' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-	dec_shift_rrx 	<= '0' when  regop_t = '1' and regop_t_is_immediat_type = '1' ;
-
-	dec_shift_val 	<= (if_ir(11 downto 8) & '0') 		when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- Valeur de rotation multipliée par 2
-	dec_op2 		<= X"000000" & if_ir(7 downto 0)  	when  regop_t = '1' and regop_t_is_immediat_type = '1' ; -- l'opérande 2 est un immédiat 8 bit étendu sur 32
-
--------------------------------------------------------------------------------
 
 
 --DECODING BRANCHEMENT INSTRUCTION :
@@ -531,8 +494,8 @@ begin
 									next_state <= FETCH ;
 		end case ;							
 		end process ;
-
-	action_process: process(ck)
+	--need to be done in two steps to wait for register reads
+	first_action_process: process(ck)
 	begin
 		if rising_edge(ck) then
 			case cur_state is
@@ -551,8 +514,50 @@ begin
 						dec2exe_push <= '0';
 						inc_pc_signal <= '1';
 					elsif (T3_run = '1') then
-						if_pop <= '1';
-						dec2exe_push <= '1';
+						if (regop_t = '1') then
+							-- DECODING s BIT + REGISTER :
+							dec_flag_wb 	<= if_ir(20) ; 	--setup of s bit from opcode, it says if we need to wb flags
+							radr1_signal 	<= if_ir(19 downto 16); 			--setup of Rn
+							wadr1_signal 	<= if_ir(15 downto 12);				--setup of Rd
+							dec_exe_wb 		<= not(tst_i or teq_i or cmp_i or cmn_i); --write back activation	
+							-- DECODING op2 :
+
+							-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
+							if (if_ir(25) = '0') then
+								radr2_signal <= if_ir(3 downto 0); --setup of Rm
+
+								-- on associe les shifts value quand on est de type regop_t, quand le bit 4 vaut 0, et quand on est de type immédiat
+								
+								dec_shift_lsl <= '1' when if_ir(6 downto 5) = "00" else '0' ;
+								dec_shift_lsr <= '1' when if_ir(6 downto 5) = "01" else '0' ;
+								dec_shift_asr <= '1' when if_ir(6 downto 5) = "10" else '0' ;
+								dec_shift_ror <= '1' when if_ir(6 downto 5) = "11" else '0' ;
+								dec_shift_rrx <= '1' when if_ir(6 downto 5) = "11" and (if_ir(11 downto 7) = "00001") else '0';
+								
+								-- Case 1.a : bit 4 = 0 :
+								if (if_ir(4) = '0') then
+									dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
+								else when regop_t = '1' and regop_t_is_immediat_type = '0' and if_ir(4) = '1' 
+								-- Case 1.b : bit 4 = 1
+									radr3_signal <= if_ir(11 downto 8); -- setup Rs
+								end if;
+
+							else
+							-- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
+								dec_shift_lsl 	<= '0';
+								dec_shift_lsr 	<= '0';
+								dec_shift_asr 	<= '0';
+								dec_shift_ror 	<= '1';
+								dec_shift_rrx 	<= '0';
+
+								dec_shift_val 	<= (if_ir(11 downto 8) & '0'); -- Valeur de rotation multipliée par 2
+								dec_op2 		<= X"000000" & if_ir(7 downto 0); -- l'opérande 2 est un immédiat 8 bit étendu sur 32
+							end if;
+						-------------------------------------------------------------------------------
+						end if;
+						--don't push yet : wait for register reads and then push
+						if_pop <= '0';
+						dec2exe_push <= '0';
 						inc_pc_signal <= '1';
 					elsif (T4_run = '1') then
 						if_pop <= '0';
@@ -618,7 +623,65 @@ begin
 					if_pop <= '0';
 		end case ;
 		end if;
-	end process action_process;
+	end process first_action_process;
+
+	--second process to handle the data read in the register bank
+	second_action_process: process(rdata1_signal, rdata2_signal, rdata3_signal, rdata4_signal)
+	begin
+		if (regop_t = '1') then
+			-- in any case, need rs
+			-- if not valid, freeze
+			if (rv1_signal = '0') then
+				if_pop <= '0';
+				dec2exe_push <= '0';
+				inc_pc_signal <= if2dec_empty;
+			else
+				dec_op1 <= rdata1_signal;
+				-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
+				if (if_ir(25) = '0') then
+					-- need rm
+					-- if not valid, freeze
+					if (rv2_signal = '0') then
+						if_pop <= '0';
+						dec2exe_push <= '0';
+						inc_pc_signal <= if2dec_empty;
+					else
+						dec_op2 <= rdata2_signal;
+						-- Case 1.a : bit 4 = 0 :
+						if (if_ir(4) = '0') then
+							dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
+							if_pop <= '1';
+							dec2exe_push <= '1';
+							inc_pc_signal <= '1';
+						else
+						-- Case 1.b : bit 4 = 1
+							-- need rm
+							-- if not valid, freeze
+							if (rv3_signal = '0') then
+								if_pop <= '0';
+								dec2exe_push <= '0';
+								inc_pc_signal <= if2dec_empty;
+							else
+								shift_val <= rdata3_signal(4 downto 0);
+								if_pop <= '1';
+								dec2exe_push <= '1';
+								inc_pc_signal <= '1';
+							end if;
+						end if;
+					end if;
+				else
+				-- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
+					-- no dep, we can continue
+					if_pop <= '1';
+					dec2exe_push <= '1';
+					inc_pc_signal <= '1';
+				end if;
+			end if;
+		end if;
+	end process second_action_process;
+
+
+
 -------------------------------------------------------------------------------
 
 --Actions for state FETCH :
