@@ -3,7 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 --On ne traitera pas les transferts multiples pour le moment, a voir a la fin
--- Dans le décodage des inst de traitement de données il manque les else
 
 entity Decod is
 	port(
@@ -267,8 +266,6 @@ signal ovr	: Std_Logic;
 
 -- Write Port of reg :
 
-signal wadr1_signal : std_logic ;
-signal wadr2_signal : std_logic ;
 signal wdata1_signal : std_logic ;
 signal wdata2_signal : std_logic ;
 signal wen1_signal : std_logic ;
@@ -293,9 +290,9 @@ signal inval_ovr_signal			: Std_Logic;
 -- Gestion de EXE
 signal dec2exe_push : std_logic;
 
--- Ajout de signal gerant Up/Down sur les acces memoires :
+-- Flags des accès mémoire
 
-signal dec_to_mem_up_down : std_logic ;
+signal dec_mem_up_down : std_logic ;
 
 -- DECOD FSM
 
@@ -411,44 +408,6 @@ begin
 	
 -------------------------------------------------------------------------------
 
---DECODING SIMPLE TRANSFERT INSTRUCTION :
-
-	dec_pre_index 				<= if_ir(24) 	when trans_t 	= '1' ;
-	dec_mem_lw 					<= '1' 			when if_ir(20) 	= '1' and if_ir(22) = '0' and trans_t = '1' else 0 ;
-	dec_mem_sw 					<= '1' 			when if_ir(20) 	= '0' and if_ir(22) = '0' and trans_t = '1' else 0 ;
-	dec_mem_lb 					<= '1' 			when if_ir(20) 	= '1' and if_ir(22) = '1' and trans_t = '1' else 0 ;
-	dec_mem_sb 					<= '1' 			when if_ir(20) 	= '0' and if_ir(22) = '1' and trans_t = '1' else 0 ;
-	trans_t_is_immediat_type 	<= '0' 			when if_ir(25) 	= '1' and trans_t 	= '1' ; --Rappel : les ingé arm etant des bolosses, ici I = 0 => immediat type
-
-	radr1_signal 				<= if_ir(19 downto 16) when trans_t = '1' ;
-	radr2_signal 				<= if_ir(15 downto 12) when trans_t = '1' ;
-
-
-	dec_to_mem_up_down 			<= if_ir(23) when trans_t = '1' ;
-	--	Cas 1 : De type immédiat :
-
-	op1 						<= "00000000000000000000" & if_ir(11 downto 0) when trans_t = '1' and trans_t_is_immediat_type = '0' ;
-
-	-- Cas 2 : Pas de type immédiat : 
-
-	radr3_signal 				<= if_ir(3 downto 0) when trans_t = '1' and trans_t_is_immediat_type = '1' ;
-	
-	dec_shift_lsl 				<= '1' when if_ir(6 downto 5) = "00" and ( trans_t = '1' and trans_t_is_immediat_type = '1') ;
-	dec_shift_lsr 				<= '1' when if_ir(6 downto 5) = "01" and ( trans_t = '1' and trans_t_is_immediat_type = '1') ;
-	dec_shift_asr 				<= '1' when if_ir(6 downto 5) = "10" and ( trans_t = '1' and trans_t_is_immediat_type = '1') ;
-	dec_shift_ror 				<= '1' when if_ir(6 downto 5) = "11" and ( trans_t = '1' and trans_t_is_immediat_type = '1') ;
-	dec_shift_rrx 				<= '1' when if_ir(6 downto 5) = "11" and (if_ir(11 downto 7) = "00001" and trans_t = '1' and trans_t_is_immediat_type = '0') ;
-	
-	-- Case 1.a : bit 4 = 0 :
-
-	dec_shift_val 				<= if_ir(11 downto 7) when trans_t = '1' and trans_t_is_immediat_type = '1' and if_ir(4) = '0' ; -- setup shift_val
-
-	-- Case 1.b : bit 4 = 1
-
-	radr4_signal 				<= if_ir(11 downto 8) when trans_t = '1' and trans_t_is_immediat_type = '1' and if_ir(4) = '1' ; -- setup Rs
-
-
-
 	
 -------------------------------------------------------------------------------
 
@@ -530,7 +489,7 @@ begin
 							-- DECODING s BIT + REGISTER :
 							dec_flag_wb 	<= if_ir(20) ; 	--setup of s bit from opcode, it says if we need to wb flags
 							radr1_signal 	<= if_ir(19 downto 16); 			--setup of Rn
-							wadr1_signal 	<= if_ir(15 downto 12);				--setup of Rd
+							exe_dest 	<= if_ir(15 downto 12);				--setup of Rd
 
 							--invalidation
 							inval_adr1_signal <= if_ir(15 downto 12);
@@ -571,7 +530,56 @@ begin
 								dec_shift_val 	<= (if_ir(11 downto 8) & '0'); -- Valeur de rotation multipliée par 2
 								dec_op2 		<= X"000000" & if_ir(7 downto 0); -- l'opérande 2 est un immédiat 8 bit étendu sur 32
 							end if;
-						-------------------------------------------------------------------------------
+						elsif (trans_t = '1') then
+							--DECODING SIMPLE TRANSFERT INSTRUCTION :
+							--TODO: handle post-index (no idea how)
+							dec_pre_index 		<= if_ir(24);
+							dec_mem_lw 			<= if_ir(20) and not(if_ir(22));
+							dec_mem_sw 			<= not(if_ir(20)) and not(if_ir(22));
+							dec_mem_lb 			<= if_ir(20) and if_ir(22) ;
+							dec_mem_sb 			<= not(if_ir(20)) and if_ir(22) ;
+
+							radr1_signal 		<= if_ir(19 downto 16);
+							exe_dest 			<= if_ir(19 downto 16);
+							mem_dest 			<= if_ir(15 downto 12);
+							
+							--if write back, wb the result of the ALU to the read register 1
+							dec_exe_wb			<= if_ir(21);
+							dec_mem_up_down 	<= if_ir(23);
+
+							--invalidate registers
+							inval_adr1_signal <= if_ir(15 downto 12);
+							--inval if wb
+							inval1 <= if_ir(21);
+
+							inval_adr2_signal <= if_ir(19 downto 16);
+							--inval if load
+							inval2 <= if_ir(20);
+
+							inval_czn_signal <= '0';
+							inval_ovr_signal <= '0';
+
+							--	Cas 1 : De type immédiat :
+							if (if_ir(25) = '1') then
+								op2 			<= "00000000000000000000" & if_ir(11 downto 0);
+							-- Cas 2 : Pas de type immédiat : 
+							else
+								radr3_signal 		<= if_ir(3 downto 0);
+								
+								dec_shift_lsl 		<= '1' when if_ir(6 downto 5) = "00" else '0';
+								dec_shift_lsr 		<= '1' when if_ir(6 downto 5) = "01" else '0';
+								dec_shift_asr 		<= '1' when if_ir(6 downto 5) = "10" else '0';
+								dec_shift_ror 		<= '1' when if_ir(6 downto 5) = "11" else '0';
+								dec_shift_rrx 		<= '1' when if_ir(6 downto 5) = "11" and if_ir(11 downto 7) = "00001" else '0';
+								
+								-- Case 1.a : bit 4 = 0 :
+								if (if_ir(4) = '0') then
+									dec_shift_val <= if_ir(11 downto 7) ; -- setup shift_val
+								-- Case 1.b : bit 4 = 1
+								else
+									radr4_signal  <= if_ir(11 downto 8) ; -- setup Rs
+								end if;
+							end if;
 						end if;
 						--don't push yet : wait for register reads and then push
 						if_pop <= '0';
@@ -645,57 +653,69 @@ begin
 
 	--second process to handle the data read in the register bank
 	second_action_process: process(rdata1_signal, rdata2_signal, rdata3_signal, rdata4_signal)
+	variable op_valid : std_logic;
 	begin
 		if (regop_t = '1') then
-			-- in any case, need rs
-			-- if not valid, freeze
-			if (rv1_signal = '0') then
-				if_pop <= '0';
-				dec2exe_push <= '0';
-				inc_pc_signal <= if2dec_empty;
-			else
-				dec_op1 <= rdata1_signal;
-				-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
-				if (if_ir(25) = '0') then
-					-- need rm
-					-- if not valid, freeze
-					if (rv2_signal = '0') then
-						if_pop <= '0';
-						dec2exe_push <= '0';
-						inc_pc_signal <= if2dec_empty;
-					else
-						dec_op2 <= rdata2_signal;
-						-- Case 1.a : bit 4 = 0 :
-						if (if_ir(4) = '0') then
-							dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
-							if_pop <= '1';
-							dec2exe_push <= '1';
-							inc_pc_signal <= '1';
-						else
-						-- Case 1.b : bit 4 = 1
-							-- need rm
-							-- if not valid, freeze
-							if (rv3_signal = '0') then
-								if_pop <= '0';
-								dec2exe_push <= '0';
-								inc_pc_signal <= if2dec_empty;
-							else
-								shift_val <= rdata3_signal(4 downto 0);
-								if_pop <= '1';
-								dec2exe_push <= '1';
-								inc_pc_signal <= '1';
-							end if;
-						end if;
-					end if;
-				else
-				-- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
-					-- no dep, we can continue
+			dec_op1 <= rdata1_signal;
+			-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
+			if (if_ir(25) = '0') then
+				dec_op2 <= rdata2_signal;
+				-- Case 1.a : bit 4 = 0 :
+				if (if_ir(4) = '0') then
+					dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
 					if_pop <= '1';
 					dec2exe_push <= '1';
 					inc_pc_signal <= '1';
+					op_valid := rv1_signal and rv2_signal;
+				else
+				-- Case 1.b : bit 4 = 1
+					shift_val <= rdata3_signal(4 downto 0);
+					if_pop <= '1';
+					dec2exe_push <= '1';
+					inc_pc_signal <= '1';
+					op_valid := rv1_signal and rv2_signal and rv3_signal;
+				end if;
+			else
+			-- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
+				op_valid := rv1_signal;
+			end if;
+		elsif (trans_t = '1') then
+			op1 <= rdata1_signal;
+			-- Case 1 : immediate (I = 1)
+			if (if_ir(25) = '1') then
+				op_valid := rv1_signal;
+			-- Cas 2 : Pas de type immédiat : 
+			else
+				op2 = rdata3_signal;
+				-- Case 2.a : bit 4 = 0 :
+				if (if_ir(4) = '0') then
+					op_valid := rv1_signal and rv3_signal;
+				-- Case 2.b : bit 4 = 1
+				else
+					op_valid := rv1_signal and rv3_signal and rv4_signal;
+					shift_val  <= rdata4_signal; -- setup Rs
 				end if;
 			end if;
+			--if load need r2
+			if (if_ir(20) = '0') then
+				op_valid := op_valid and rv2_signal;
+				dec_mem_data <= rdata2_signal;
+			end if;
+		else 
+			op_valid := '1';
 		end if;
+		if (op_valid = '0' and (trans_t = '1' or regop_t = '1')) then
+			--freeze because an operand is invalid
+			if_pop <= '0';
+			dec2exe_push <= '0';
+			inc_pc_signal <= if2dec_empty;
+		elsif (op_valid = '1' and (trans_t = '1' or regop_t = '1')) then
+			if_pop <= '1';
+			dec2exe_push <= '1';
+			inc_pc_signal <= '1';
+		end if;
+		
+
 	end process second_action_process;
 
 
