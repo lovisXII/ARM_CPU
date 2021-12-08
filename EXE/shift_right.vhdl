@@ -4,8 +4,6 @@
 
 LIBRARY IEEE ;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.NUMERIC_STD.ALL ;
-USE IEEE.MATH_REAL.ALL ;
 
 ENTITY Shift_right IS
 	PORT(
@@ -14,7 +12,9 @@ ENTITY Shift_right IS
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
-    cout      : OUT Std_Logic
+    cout      : OUT Std_Logic;
+    vdd: IN Std_logic;
+    vss: IN Std_logic
     );
 END Shift_right;
 
@@ -31,10 +31,10 @@ BEGIN
     variable start_16 : std_logic_vector(15 downto 0);
     BEGIN
         start_bit := arithmetic and din(31);
-        start_2 := (others => start_bit);
-        start_4 := (others => start_bit);
-        start_8 := (others => start_bit);
-        start_16 := (others => start_bit);
+        start_2 := start_bit & start_bit;
+        start_4 := start_2 & start_2;
+        start_8 := start_4 & start_4;
+        start_16 := start_8 & start_8;
         internal_shift := din;
         internal_carry := cin;
         if shift_val(0) = '1' then
@@ -60,4 +60,4 @@ BEGIN
         cout <= internal_carry;
         dout <= internal_shift;
     END PROCESS;
-END ARCHITECTURE ;
+END behavior ;
