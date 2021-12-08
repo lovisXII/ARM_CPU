@@ -255,9 +255,21 @@ signal ovr	: Std_Logic;
  signal radr3_signal : std_logic ;
  signal radr4_signal : std_logic ;
 
+-- Write Port of reg :
+
+signal wadr1_signal : std_logic ;
+signal wadr2_signal : std_logic ;
+signal wdata1_signal : std_logic ;
+signal wdata2_signal : std_logic ;
+signal wen1_signal : std_logic ;
+signal wen2_signal : std_logic ;
  --Gestion de pc :
- 
+ signal reg_pc_signal : std_logic_vector(31 downto 0) ;
+ signal dec2if_push   : std_logic;
  signal inc_pc_signal : std_logic ;
+
+-- Gestion de EXE
+signal dec2exe_push : std_logic;
 
 -- Ajout de signal gerant Up/Down sur les acces memoires :
 
@@ -411,12 +423,7 @@ begin
 -- Dans le cas d'un branchement, on regarde si la condition est vraie, si c'est le cas on invalide pc et on change son calcul par l'offset ;
 
 	bl_i 	<= '1' when if_ir(24) = '1' and branch_t ='1' else '0'; -- le branchement fait un link
-	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0'; -- le branchement ne fait pas de link
-	inc_pc_signal <= '0' ; -- permet de dire a pc d'arreter de s'incrémenter en faisant des +4
-	
-	radr1_signal <= "1111" ; -- on lit pc
-	op1 <= "000000" & if_ir(23 downto 0) & "00" when branch_t = '1' ; --l'offset est etendue sur 32 bits et multiplié par 4, on va l'envoyer dans EXE pour faire le calcul
-
+	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0'; -- le branchement ne fait pas de link	
 	
 -------------------------------------------------------------------------------
 
@@ -515,6 +522,94 @@ begin
 									next_state <= FETCH ;
 		end case ;							
 		end process ;
+
+	action_process: process(ck)
+	begin
+		if rising_edge(ck) then
+			case cur_state is
+				when FETCH => 
+					dec2if_push <= '1';
+					if_pop <= '0';
+					dec2exe_push <= '0';
+					inc_pc_signal <= '1';
+				when RUN => 
+					if (T1_run = '1') then 
+						if_pop <= '0';
+						dec2exe_push <= '0';
+						inc_pc_signal <= if2dec_empty;
+					elsif (T2_run = '1') then
+						if_pop <= '1';
+						dec2exe_push <= '0';
+						inc_pc_signal <= '1';
+					elsif (T3_run = '1') then
+						if_pop <= '1';
+						dec2exe_push <= '1';
+						inc_pc_signal <= '1';
+					elsif (T4_run = '1') then
+						if_pop <= '0';
+						dec2exe_push <= '0';
+						inc_pc_signal <= if2dec_empty;
+					elsif (T5_run = '1') then
+						if_pop <= '0';
+						dec2exe_push <= '1';
+						inc_pc_signal <= if2dec_empty;
+					elsif (T6_run = '1') then
+						if_pop <= '1';
+						dec2exe_push <= '0';
+						inc_pc_signal <= '1';
+					end if;
+				when LINK =>
+					dec_op1			<= reg_pc_signal;
+					dec_op2			<= X"FFFFFFFC"; -- add -4 to pc
+					dec_exe_dest	<= X"E"; --write to r14
+					dec_exe_wb		<= 1; --activate wb
+					dec_flag_wb		<= 0; --don't update flags
+		
+					-- Alu operand selection (take both operands)
+					dec_comp_op1	<= 1; 
+					dec_comp_op2	<= 1;
+					dec_alu_cy 		<= 0;
+		
+					-- Alu command (select add)
+					dec_alu_add		<= 1;
+					dec_alu_and		<= 0;
+					dec_alu_or		<= 0;
+					dec_alu_xor		<= 0;
+
+					--push and stop inc of pc signal
+					dec2exe_push <= '1';
+					inc_pc_signal <= '1';
+
+					--does not pop 
+					if_pop <= '0';
+
+				when BRANCH =>
+					dec_op1			<= reg_pc_signal;
+					dec_op2			<= "000000" & if_ir(23 downto 0) & "00"; -- add offset*4 to pc
+					dec_exe_dest	<= X"F"; --write to r15=pc
+					dec_exe_wb		<= 1; --activate wb
+					dec_flag_wb		<= 0; --don't update flags
+		
+					-- Alu operand selection (take both operands)
+					dec_comp_op1	<= 1; 
+					dec_comp_op2	<= 1;
+					dec_alu_cy 		<= 0;
+		
+					-- Alu command (select add)
+					dec_alu_add		<= 1;
+					dec_alu_and		<= 0;
+					dec_alu_or		<= 0;
+					dec_alu_xor		<= 0;
+
+					--push and stop inc of pc signal
+					dec2exe_push <= '1';
+					inc_pc_signal <= '1';
+
+					--does not pop 
+					if_pop <= '0';
+		end case ;
+		end if;
+	end process action_process;
 -------------------------------------------------------------------------------
 
 --Actions for state FETCH :
