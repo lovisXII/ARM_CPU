@@ -172,6 +172,10 @@ component fifo -- on ne peut pas utiliser de fifo generic car c'est pas synthét
 	);
 end component;
 
+signal dec2if_empty_signal : std_logic;
+signal dec2exe_empty_signal : std_logic;
+signal if_pop_signal : std_logic;
+
 signal cond	: Std_Logic ; -- predicat vrai ou pas
 signal condv	: Std_Logic; -- condition valide ou non
 signal operv : Std_Logic;
@@ -244,30 +248,31 @@ signal ovr	: Std_Logic;
  signal T4_run 		: std_logic ;
  signal T5_run 		: std_logic ;
  signal T6_run 		: std_logic ;
- signal T1_branch 	: std_logic ;
- signal T2_branch 	: std_logic ;
 
  -- Read Port of reg :
 
- signal radr1_signal : std_logic ;
- signal radr2_signal : std_logic ;
- signal radr3_signal : std_logic ;
- signal radr4_signal : std_logic ;
+ signal radr1_signal : Std_Logic_Vector(3 downto 0) ;
+ signal radr2_signal : Std_Logic_Vector(3 downto 0) ;
+ signal radr3_signal : Std_Logic_Vector(3 downto 0) ;
+ signal radr4_signal : Std_Logic_Vector(3 downto 0) ;
 
- signal rdata1_signal : std_logic ;
- signal rdata2_signal : std_logic ;
- signal rdata3_signal : std_logic ;
- signal rdata4_signal : std_logic ;
+ signal rdata1_signal : Std_Logic_Vector(31 downto 0) ;
+ signal rdata2_signal : Std_Logic_Vector(31 downto 0) ;
+ signal rdata3_signal : Std_Logic_Vector(31 downto 0) ;
+ signal rdata4_signal : Std_Logic_Vector(4 downto 0) ;
 
  signal rv1_signal : std_logic ;
  signal rv2_signal : std_logic ;
  signal rv3_signal : std_logic ;
  signal rv4_signal : std_logic ;
 
+ signal reg_cznv_signal : std_logic;
+ signal reg_vv_signal   : std_logic;
+
 -- Write Port of reg :
 
-signal wdata1_signal : std_logic ;
-signal wdata2_signal : std_logic ;
+signal wdata1_signal : Std_Logic_Vector(31 downto 0) ;
+signal wdata2_signal : Std_Logic_Vector(31 downto 0) ;
 signal wen1_signal : std_logic ;
 signal wen2_signal : std_logic ;
 
@@ -300,25 +305,8 @@ signal dec_mem_up_down : std_logic ;
 
 type state_type is (FETCH,RUN,MTRANS,LINK,BRANCH) ;
 signal cur_state, next_state : state_type ;
-signal dec_out : std_logic_vector(3)
+signal dec_out : std_logic_vector(3 downto 0) ;
 begin
-
-	dec2exec : fifo	port map (	
-	din		: in std_logic_vector(WIDTH-1 downto 0);
-	dout		: out std_logic_vector(WIDTH-1 downto 0);
-
-	-- commands
-	push		: in std_logic;
-	pop		: in std_logic;
-
-	-- flags
-	full		: out std_logic;
-	empty		: out std_logic;
-
-	reset_n	: in std_logic;
-	ck			: in std_logic;
-	vdd		: in bit;
-	vss		: in bit)
 
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
@@ -350,7 +338,7 @@ begin
 
 
 	condv <= '1' 			when if_ir(31 downto 28) = X"E" or
-				reg_cznv	and( 
+				(reg_cznv_signal = '1'	and ( 
 								(if_ir(31 downto 28) = X"0") 	or
 								(if_ir(31 downto 28) = X"0" ) 	or
 								(if_ir(31 downto 28) = X"1" ) 	or 
@@ -360,12 +348,12 @@ begin
 								(if_ir(31 downto 28) = X"5" ) 	or
 								(if_ir(31 downto 28) = X"8" ) 	or
 								(if_ir(31 downto 28) = X"9" )
-								) or
-				reg_vv  and (
+								)) or
+				(reg_vv_signal = '1'  and (
 								(if_ir(31 downto 28) = X"6" and ovr = '1')	or
 								(if_ir(31 downto 28) = X"7" and ovr ='0')
-							)	
-				else (reg_cznv and reg_vv) ;		
+							)	)
+				else (reg_cznv_signal and reg_vv_signal) ;		
 
 --INSTRUCTION DECODING : 
 
@@ -419,9 +407,9 @@ begin
 
 --Gestion des transitions :
 
-	T1_fetch <= not(dec2if_empty) ; 			-- on peut charger de nouvelles instructions
+	T1_fetch <= not(dec2if_empty_signal) ; 			-- on peut charger de nouvelles instructions
 	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
-	T1_run <= if2dec_empty or not(dec2exe_empty) or not(condv) ; -- 
+	T1_run <= if2dec_empty or not(dec2exe_empty_signal) or not(condv) ; -- 
 	T2_run <= not(cond) ; 						-- condition annulée -> annulation instruction
 	T3_run <= cond and not(bl_i or b_i or stm_i or ldm_i); 							-- condition reussi et instruction tourne
 	T4_run <= bl_i and cond; 							-- branchement et link
@@ -458,7 +446,7 @@ begin
 							elsif(T6_run = '1') then
 								next_state <= MTRANS ;
 							end if ;
-				when MTRANS => next_state <= IFETCH ;
+				when MTRANS => next_state <= FETCH ;
 				when LINK => next_state <= BRANCH ;
 				--sur le truc du prof T3 est notre T1
 				when BRANCH => --if(T3_branch = '1') then ceci est une optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
@@ -472,16 +460,16 @@ begin
 			case cur_state is
 				when FETCH => 
 					dec2if_push <= '1';
-					if_pop <= '0';
+					if_pop_signal <= '0';
 					dec2exe_push <= '0';
 					inc_pc_signal <= '1';
 				when RUN => 
 					if (T1_run = '1') then 
-						if_pop <= '0';
+						if_pop_signal <= '0';
 						dec2exe_push <= '0';
 						inc_pc_signal <= if2dec_empty;
 					elsif (T2_run = '1') then
-						if_pop <= '1';
+						if_pop_signal <= '1';
 						dec2exe_push <= '0';
 						inc_pc_signal <= '1';
 					elsif (T3_run = '1') then
@@ -489,11 +477,11 @@ begin
 							-- DECODING s BIT + REGISTER :
 							dec_flag_wb 	<= if_ir(20) ; 	--setup of s bit from opcode, it says if we need to wb flags
 							radr1_signal 	<= if_ir(19 downto 16); 			--setup of Rn
-							exe_dest 	<= if_ir(15 downto 12);				--setup of Rd
+							dec_exe_dest 	<= if_ir(15 downto 12);				--setup of Rd
 
 							--invalidation
 							inval_adr1_signal <= if_ir(15 downto 12);
-							inval1 <= '1';
+							inval1_signal <= '1';
 							inval_czn_signal <= if_ir(20);
 							inval_ovr_signal <= if_ir(20);
 							dec_exe_wb 		<= not(tst_i or teq_i or cmp_i or cmn_i); --write back activation	
@@ -505,16 +493,16 @@ begin
 
 								-- on associe les shifts value quand on est de type regop_t, quand le bit 4 vaut 0, et quand on est de type immédiat
 								
-								dec_shift_lsl <= '1' when if_ir(6 downto 5) = "00" else '0' ;
-								dec_shift_lsr <= '1' when if_ir(6 downto 5) = "01" else '0' ;
-								dec_shift_asr <= '1' when if_ir(6 downto 5) = "10" else '0' ;
-								dec_shift_ror <= '1' when if_ir(6 downto 5) = "11" else '0' ;
-								dec_shift_rrx <= '1' when if_ir(6 downto 5) = "11" and (if_ir(11 downto 7) = "00001") else '0';
+								dec_shift_lsl <= not(if_ir(6)) and not(if_ir(5)) ;
+								dec_shift_lsr <= not(if_ir(6)) and if_ir(5) ;
+								dec_shift_asr <= if_ir(6) and not(if_ir(5)) ;
+								dec_shift_ror <= if_ir(6) and if_ir(5) ;
+								-- dec_shift_rrx handled in shifter
 								
 								-- Case 1.a : bit 4 = 0 :
 								if (if_ir(4) = '0') then
 									dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
-								else when regop_t = '1' and regop_t_is_immediat_type = '0' and if_ir(4) = '1' 
+								else
 								-- Case 1.b : bit 4 = 1
 									radr3_signal <= if_ir(11 downto 8); -- setup Rs
 								end if;
@@ -540,8 +528,8 @@ begin
 							dec_mem_sb 			<= not(if_ir(20)) and if_ir(22) ;
 
 							radr1_signal 		<= if_ir(19 downto 16);
-							exe_dest 			<= if_ir(19 downto 16);
-							mem_dest 			<= if_ir(15 downto 12);
+							dec_exe_dest 			<= if_ir(19 downto 16);
+							dec_mem_dest 			<= if_ir(15 downto 12);
 							
 							--if write back, wb the result of the ALU to the read register 1
 							dec_exe_wb			<= if_ir(21);
@@ -550,27 +538,27 @@ begin
 							--invalidate registers
 							inval_adr1_signal <= if_ir(15 downto 12);
 							--inval if wb
-							inval1 <= if_ir(21);
+							inval1_signal <= if_ir(21);
 
 							inval_adr2_signal <= if_ir(19 downto 16);
 							--inval if load
-							inval2 <= if_ir(20);
+							inval2_signal <= if_ir(20);
 
 							inval_czn_signal <= '0';
 							inval_ovr_signal <= '0';
 
 							--	Cas 1 : De type immédiat :
 							if (if_ir(25) = '1') then
-								op2 			<= "00000000000000000000" & if_ir(11 downto 0);
+								dec_op2  			<= "00000000000000000000" & if_ir(11 downto 0);
 							-- Cas 2 : Pas de type immédiat : 
 							else
 								radr3_signal 		<= if_ir(3 downto 0);
 								
-								dec_shift_lsl 		<= '1' when if_ir(6 downto 5) = "00" else '0';
-								dec_shift_lsr 		<= '1' when if_ir(6 downto 5) = "01" else '0';
-								dec_shift_asr 		<= '1' when if_ir(6 downto 5) = "10" else '0';
-								dec_shift_ror 		<= '1' when if_ir(6 downto 5) = "11" else '0';
-								dec_shift_rrx 		<= '1' when if_ir(6 downto 5) = "11" and if_ir(11 downto 7) = "00001" else '0';
+								dec_shift_lsl <= not(if_ir(6)) and not(if_ir(5)) ;
+								dec_shift_lsr <= not(if_ir(6)) and if_ir(5) ;
+								dec_shift_asr <= if_ir(6) and not(if_ir(5)) ;
+								dec_shift_ror <= if_ir(6) and if_ir(5) ;
+								-- dec_shift_rrx handled in shifter
 								
 								-- Case 1.a : bit 4 = 0 :
 								if (if_ir(4) = '0') then
@@ -582,19 +570,19 @@ begin
 							end if;
 						end if;
 						--don't push yet : wait for register reads and then push
-						if_pop <= '0';
+						if_pop_signal <= '0';
 						dec2exe_push <= '0';
 						inc_pc_signal <= '1';
 					elsif (T4_run = '1') then
-						if_pop <= '0';
+						if_pop_signal <= '0';
 						dec2exe_push <= '0';
 						inc_pc_signal <= if2dec_empty;
 					elsif (T5_run = '1') then
-						if_pop <= '0';
+						if_pop_signal <= '0';
 						dec2exe_push <= '1';
 						inc_pc_signal <= if2dec_empty;
 					elsif (T6_run = '1') then
-						if_pop <= '1';
+						if_pop_signal <= '1';
 						dec2exe_push <= '0';
 						inc_pc_signal <= '1';
 					end if;
@@ -602,51 +590,55 @@ begin
 					dec_op1			<= reg_pc_signal;
 					dec_op2			<= X"FFFFFFFC"; -- add -4 to pc
 					dec_exe_dest	<= X"E"; --write to r14
-					dec_exe_wb		<= 1; --activate wb
-					dec_flag_wb		<= 0; --don't update flags
+					dec_exe_wb		<= '1'; --activate wb
+					dec_flag_wb		<= '0'; --don't update flags
 		
 					-- Alu operand selection (take both operands)
-					dec_comp_op1	<= 1; 
-					dec_comp_op2	<= 1;
-					dec_alu_cy 		<= 0;
+					dec_comp_op1	<= '1'; 
+					dec_comp_op2	<= '1';
+					dec_alu_cy 		<= '0';
 		
 					-- Alu command (select add)
-					dec_alu_add		<= 1;
-					dec_alu_and		<= 0;
-					dec_alu_or		<= 0;
-					dec_alu_xor		<= 0;
+					dec_alu_add		<= '1';
+					dec_alu_and		<= '0';
+					dec_alu_or		<= '0';
+					dec_alu_xor		<= '0';
 
 					--push and stop inc of pc signal
 					dec2exe_push <= '1';
 					inc_pc_signal <= '1';
 
 					--does not pop 
-					if_pop <= '0';
+					if_pop_signal <= '0';
 
 				when BRANCH =>
 					dec_op1			<= reg_pc_signal;
 					dec_op2			<= "000000" & if_ir(23 downto 0) & "00"; -- add offset*4 to pc
 					dec_exe_dest	<= X"F"; --write to r15=pc
-					dec_exe_wb		<= 1; --activate wb
-					dec_flag_wb		<= 0; --don't update flags
+					dec_exe_wb		<= '1'; --activate wb
+					dec_flag_wb		<= '0'; --don't update flags
 		
 					-- Alu operand selection (take both operands)
-					dec_comp_op1	<= 1; 
-					dec_comp_op2	<= 1;
-					dec_alu_cy 		<= 0;
+					dec_comp_op1	<= '1'; 
+					dec_comp_op2	<= '1';
+					dec_alu_cy 		<= '0';
 		
 					-- Alu command (select add)
-					dec_alu_add		<= 1;
-					dec_alu_and		<= 0;
-					dec_alu_or		<= 0;
-					dec_alu_xor		<= 0;
+					dec_alu_add		<= '1';
+					dec_alu_and		<= '0';
+					dec_alu_or		<= '0';
+					dec_alu_xor		<= '0';
 
 					--push and stop inc of pc signal
 					dec2exe_push <= '1';
 					inc_pc_signal <= '1';
 
 					--does not pop 
-					if_pop <= '0';
+					if_pop_signal <= '0';
+			when MTRANS => 
+						if_pop_signal <= '1';
+						dec2exe_push <= '0';
+						inc_pc_signal <= '1';
 		end case ;
 		end if;
 	end process first_action_process;
@@ -663,14 +655,14 @@ begin
 				-- Case 1.a : bit 4 = 0 :
 				if (if_ir(4) = '0') then
 					dec_shift_val <= if_ir(11 downto 7); -- setup shift_val
-					if_pop <= '1';
+					if_pop_signal <= '1';
 					dec2exe_push <= '1';
 					inc_pc_signal <= '1';
 					op_valid := rv1_signal and rv2_signal;
 				else
 				-- Case 1.b : bit 4 = 1
-					shift_val <= rdata3_signal(4 downto 0);
-					if_pop <= '1';
+					dec_shift_val <= rdata3_signal(4 downto 0);
+					if_pop_signal <= '1';
 					dec2exe_push <= '1';
 					inc_pc_signal <= '1';
 					op_valid := rv1_signal and rv2_signal and rv3_signal;
@@ -680,20 +672,20 @@ begin
 				op_valid := rv1_signal;
 			end if;
 		elsif (trans_t = '1') then
-			op1 <= rdata1_signal;
+			dec_op1 <= rdata1_signal;
 			-- Case 1 : immediate (I = 1)
 			if (if_ir(25) = '1') then
 				op_valid := rv1_signal;
 			-- Cas 2 : Pas de type immédiat : 
 			else
-				op2 = rdata3_signal;
+				dec_op2  <= rdata3_signal;
 				-- Case 2.a : bit 4 = 0 :
 				if (if_ir(4) = '0') then
 					op_valid := rv1_signal and rv3_signal;
 				-- Case 2.b : bit 4 = 1
 				else
 					op_valid := rv1_signal and rv3_signal and rv4_signal;
-					shift_val  <= rdata4_signal; -- setup Rs
+					dec_shift_val  <= rdata4_signal; -- setup Rs
 				end if;
 			end if;
 			--if load need r2
@@ -706,11 +698,11 @@ begin
 		end if;
 		if (op_valid = '0' and (trans_t = '1' or regop_t = '1')) then
 			--freeze because an operand is invalid
-			if_pop <= '0';
+			if_pop_signal <= '0';
 			dec2exe_push <= '0';
 			inc_pc_signal <= if2dec_empty;
 		elsif (op_valid = '1' and (trans_t = '1' or regop_t = '1')) then
-			if_pop <= '1';
+			if_pop_signal <= '1';
 			dec2exe_push <= '1';
 			inc_pc_signal <= '1';
 		end if;
