@@ -395,17 +395,14 @@ begin
 
 	bl_i 	<= '1' when if_ir(24) = '1' and branch_t ='1' else '0'; -- le branchement fait un link
 	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0'; -- le branchement ne fait pas de link	
-	
--------------------------------------------------------------------------------
-
-	
+		
 -------------------------------------------------------------------------------
 
 --DECODING MULTIPLE TRANSFERT INSTRUCTION :
 
 -------------------------------------------------------------------------------
 
---Machine a état :
+---------------- MACHINE A ETAT------------------------------------------------
 
 --Gestion des transitions :
 
@@ -455,26 +452,28 @@ begin
 									next_state <= FETCH ;
 		end case ;							
 		end process ;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------		
 	--need to be done in two steps to wait for register reads
 	first_action_process: process(ck)
 	begin
 		if rising_edge(ck) then
 			case cur_state is
-				when FETCH => 
-					dec2if_push <= '1';
+				when FETCH => -- on doit envoyer pc dans dec2if, ne rien pop dans if2dec, ne rien push dans dec2exe_push, pc s'incremente normalement
+					dec2if_push <= '1'; 
 					if_pop_signal <= '0';
 					dec2exe_push <= '0';
 					inc_pc_signal <= '1';
 				when RUN => 
-					if (T1_run = '1') then 
+					if (T1_run = '1') then  -- sending new pc to dec2if if not full
 						if_pop_signal <= '0';
 						dec2exe_push <= '0';
 						inc_pc_signal <= if2dec_empty;
-					elsif (T2_run = '1') then
-						if_pop_signal <= '1';
-						dec2exe_push <= '0';
-						inc_pc_signal <= '1';
-					elsif (T3_run = '1') then
+					elsif (T2_run = '1') then -- predicat is false, instruction must be ignore
+						if_pop_signal <= '1'; -- ifecth send instruction to decode
+						dec2exe_push <= '0'; 
+						inc_pc_signal <= '1'; 
+					elsif (T3_run = '1') then -- predicat is true, execution of the instruction
 						if (regop_t = '1') then
 							-- DECODING s BIT + REGISTER :
 							dec_flag_wb 	<= if_ir(20) ; 	--setup of s bit from opcode, it says if we need to wb flags
@@ -486,11 +485,11 @@ begin
 							inval1_signal <= '1';
 							inval_czn_signal <= if_ir(20);
 							inval_ovr_signal <= if_ir(20);
-							dec_exe_wb 		<= not(tst_i or teq_i or cmp_i or cmn_i); --write back activation	
+							dec_exe_wb 		<= not(tst_i or teq_i or cmp_i or cmn_i); --write back activation, tst, teq... are instruction that doesnt write back
+
 							-- DECODING op2 :
 
-							-- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
-							if (if_ir(25) = '0') then
+							if (if_ir(25) = '0') then -- Case 1 : regop_t_is_immediat_type = '0' (I = 0)
 								radr2_signal <= if_ir(3 downto 0); --setup of Rm
 
 								-- on associe les shifts value quand on est de type regop_t, quand le bit 4 vaut 0, et quand on est de type immédiat
@@ -509,8 +508,7 @@ begin
 									radr3_signal <= if_ir(11 downto 8); -- setup Rs
 								end if;
 
-							else
-							-- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
+							else -- Case 2 : regop_t_is_immediat_type = '1' (I = 1)
 								dec_shift_lsl 	<= '0';
 								dec_shift_lsr 	<= '0';
 								dec_shift_asr 	<= '0';
@@ -520,8 +518,7 @@ begin
 								dec_shift_val 	<= (if_ir(11 downto 8) & '0'); -- Valeur de rotation multipliée par 2
 								dec_op2 		<= X"000000" & if_ir(7 downto 0); -- l'opérande 2 est un immédiat 8 bit étendu sur 32
 							end if;
-						elsif (trans_t = '1') then
-							--DECODING SIMPLE TRANSFERT INSTRUCTION :
+						elsif (trans_t = '1') then --DECODING SIMPLE TRANSFERT INSTRUCTION :
 							--TODO: handle post-index (no idea how)
 							dec_pre_index 		<= if_ir(24);
 							dec_mem_lw 			<= if_ir(20) and not(if_ir(22));
