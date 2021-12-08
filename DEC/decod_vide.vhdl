@@ -273,6 +273,18 @@ signal wdata1_signal : std_logic ;
 signal wdata2_signal : std_logic ;
 signal wen1_signal : std_logic ;
 signal wen2_signal : std_logic ;
+
+-- Invalidation
+
+signal inval_adr1_signal		: Std_Logic_Vector(3 downto 0);
+signal inval1_signal			: Std_Logic;
+
+signal inval_adr2_signal		: Std_Logic_Vector(3 downto 0);
+signal inval2_signal			: Std_Logic;
+
+signal inval_czn_signal			: Std_Logic;
+signal inval_ovr_signal			: Std_Logic;
+
  --Gestion de pc :
  signal reg_pc_signal : std_logic_vector(31 downto 0) ;
  signal dec2if_push   : std_logic;
@@ -519,6 +531,12 @@ begin
 							dec_flag_wb 	<= if_ir(20) ; 	--setup of s bit from opcode, it says if we need to wb flags
 							radr1_signal 	<= if_ir(19 downto 16); 			--setup of Rn
 							wadr1_signal 	<= if_ir(15 downto 12);				--setup of Rd
+
+							--invalidation
+							inval_adr1_signal <= if_ir(15 downto 12);
+							inval1 <= '1';
+							inval_czn_signal <= if_ir(20);
+							inval_ovr_signal <= if_ir(20);
 							dec_exe_wb 		<= not(tst_i or teq_i or cmp_i or cmn_i); --write back activation	
 							-- DECODING op2 :
 
