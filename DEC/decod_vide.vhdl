@@ -248,6 +248,8 @@ signal ovr	: Std_Logic;
  signal T4_run 		: std_logic ;
  signal T5_run 		: std_logic ;
  signal T6_run 		: std_logic ;
+ signal T1_branch 	: std_logic ;
+ signal T2_branch 	: std_logic ;
 
  -- Read Port of reg :
 
