@@ -60,8 +60,8 @@ entity Decod is
 			exe_flag_wb		: in Std_Logic; -- CSPR modifiy
 
 	-- Ifetch interface
-			dec_pc			: out Std_Logic_Vector(31 downto 0) ;
-			if_ir				: in Std_Logic_Vector(31 downto 0) ;
+			dec_pc			: out Std_Logic_Vector(31 downto 0) ; -- pc
+			if_ir				: in Std_Logic_Vector(31 downto 0) ; -- 32 bits to decode
 
 	-- Ifetch synchro : fifo dec2if et if2dec
 			dec2if_empty	: out Std_Logic; -- si la fifo qui recup pc est vide
