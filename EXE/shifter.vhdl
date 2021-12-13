@@ -30,10 +30,12 @@ ARCHITECTURE behavior OF Shifter IS
 
     component shift_left
     port (
-    cin :               in std_logic_vector(31 downto 0) ;
+    din :               in std_logic_vector(31 downto 0) ;
     shift_value :       in std_logic_vector(4 downto 0);
-    cout :              out std_logic_vector(31 downto 0);
-    carry_out :         out std_logic 
+    dout :              out std_logic_vector(31 downto 0);
+    carry_out :         out std_logic ;
+    vdd       : IN  bit;
+    vss       : IN  bit 
     );
     
     end component ;
@@ -57,17 +59,21 @@ ARCHITECTURE behavior OF Shifter IS
     din       : IN  Std_Logic_Vector(31 downto 0);  
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); 
-    cout      : OUT Std_Logic);
+    cout      : OUT Std_Logic ;
+    vdd       : IN  bit;
+    vss       : IN  bit );
     end component ;
 
 BEGIN
 
     shift_left0 : shift_left port map
     (
-     cin => din , 
+     din => din , 
      shift_value => shift_val, 
-     cout => out_shift_left, 
-     carry_out => carry_out_left
+     dout => out_shift_left, 
+     carry_out => carry_out_left,
+     vdd => vdd, 
+     vss => vss
      );    
 
     shift_right0 : shift_right port map
@@ -88,7 +94,9 @@ BEGIN
      cin => cin ,
      shift_val => shift_val, 
      dout => out_shift_ror, 
-     cout => carry_out_ror
+     cout => carry_out_ror,
+     vdd => vdd, 
+     vss => vss
      );   
 
 
