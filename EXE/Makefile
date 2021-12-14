@@ -2,7 +2,8 @@
 # Version: GHDL 0.37 (Ubuntu 0.37+dfsg-1ubuntu1) [Dunoon edition] - mcode code generator
 # Command used to generate this makefile:
 # ghdl --gen-makefile exec_tb
-export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
+#export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
+export MBK_TARGET_LIB=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL=ghdl
 GHDLFLAGS=
 GHDLRUNFLAGS=
@@ -13,63 +14,91 @@ all : elab
 
 # Elaborate target.
 elab : analyse
-        $(GHDL) -c $(GHDLFLAGS) -e exec_tb
+		$(GHDL) -c $(GHDLFLAGS) -e exec_tb
 
 .PHONY: run clean
 
 # Run target
 run :
-        $(GHDL) -c $(GHDLFLAGS) -r exec_tb $(GHDLRUNFLAGS)
+		$(GHDL) -c $(GHDLFLAGS) -r exec_tb $(GHDLRUNFLAGS)
 
 # Targets to analyze libraries
-analyse: exec_tb.vhdl exec.vhdl shifter.vhdl ALU.vhdl multiplexer.vhdl shift_left.vhdl shift_right.vhdl ror.vhdl multiplexer.vhdl fifo_72b.vhdl
-        $(GHDL) -a $(GHDLFLAGS) exec_tb.vhdl
-        $(GHDL) -a $(GHDLFLAGS) exec.vhdl
-        $(GHDL) -a $(GHDLFLAGS) shifter.vhdl
-        $(GHDL) -a $(GHDLFLAGS) shift_left.vhdl
-        $(GHDL) -a $(GHDLFLAGS) shift_right.vhdl
-        $(GHDL) -a $(GHDLFLAGS) ror.vhdl
-        $(GHDL) -a $(GHDLFLAGS) multiplexer.vhdl
-        $(GHDL) -a $(GHDLFLAGS) fifo_72b.vhdl
-        $(GHDL) -a $(GHDLFLAGS) ALU.vhdl
+analyse: exec_tb.vhdl exec.vhdl shifter.vhdl alu.vhdl multiplexer.vhdl shift_left.vhdl shift_right.vhdl ror.vhdl multiplexer.vhdl fifo_72b.vhdl
+		$(GHDL) -a $(GHDLFLAGS) exec_tb.vhdl
+		$(GHDL) -a $(GHDLFLAGS) exec.vhdl
+		$(GHDL) -a $(GHDLFLAGS) shifter.vhdl
+		$(GHDL) -a $(GHDLFLAGS) shift_left.vhdl
+		$(GHDL) -a $(GHDLFLAGS) shift_right.vhdl
+		$(GHDL) -a $(GHDLFLAGS) ror.vhdl
+		$(GHDL) -a $(GHDLFLAGS) multiplexer.vhdl
+		$(GHDL) -a $(GHDLFLAGS) fifo_72b.vhdl
+		$(GHDL) -a $(GHDLFLAGS) alu.vhdl
 
 clean:
-        rm -f *.cf *.vst *.vbe *.xsc
+		rm -f *.cf *.vst *.vbe *.xsc
 
-synth: shift_right.vst shift_left.vst ror.vst shifter_model.vst
+synth: exec_model.vst
 
 shift_right.vbe: shift_right.vhdl
-        vasy -I vhdl -V -o -a shift_right.vhdl shift_right
+		vasy -I vhdl -V -o -a shift_right.vhdl shift_right
 
 shift_right_o.vbe : shift_right.vbe
-        boom -V shift_right shift_right_o
+		boom -V shift_right shift_right_o
 
 shift_right.vst : shift_right_o.vbe
-        boog shift_right_o shift_right
+		boog shift_right_o shift_right
 
 shift_left.vbe: shift_left.vhdl
-        vasy -I vhdl -V -o -a shift_left.vhdl shift_left
+		vasy -I vhdl -V -o -a shift_left.vhdl shift_left
 
 shift_left_o.vbe : shift_left.vbe
-        boom -V shift_left shift_left_o
+		boom -V shift_left shift_left_o
 
 shift_left.vst : shift_left_o.vbe
-        boog shift_left_o shift_left
+		boog shift_left_o shift_left
 
 ror.vbe: ror.vhdl
-        vasy -I vhdl -V -o -a ror.vhdl ror
+		vasy -I vhdl -V -o -a ror.vhdl ror
 
 ror_o.vbe : ror.vbe
-        boom -V ror ror_o
+		boom -V ror ror_o
 
 ror.vst : ror_o.vbe
-        boog ror_o ror
+		boog ror_o ror
 
-shifter.vst : shifter.vhdl
-        vasy -I vhdl -V -o -a shifter.vhdl shifter
+shifter.vst : shifter.vhdl shift_left.vst shift_right.vst ror.vst
+		vasy -I vhdl -V -o -a -p shifter.vhdl shifter
 
 shifter_model_o.vbe : shifter.vst
-        boom -V -O shifter_model shifter_model_o
+		boom -V -O shifter_model shifter_model_o
 
 shifter_model.vst : shifter_model_o.vbe
-        boog shifter_model_o shifter_model
+		boog shifter_model_o shifter_model
+
+alu.vbe: alu.vhdl
+		vasy -I vhdl -V -o -a alu.vhdl alu
+
+alu_o.vbe : alu.vbe
+		boom -V alu alu_o
+
+alu.vst : alu_o.vbe
+		boog alu_o alu
+
+fifo_72b.vbe: fifo_72b.vhdl
+		vasy -I vhdl -V -o -a fifo_72b.vhdl fifo_72b
+
+fifo_72b_o.vbe : fifo_72b.vbe
+		boom -V fifo_72b fifo_72b_o
+
+fifo_72b.vst : fifo_72b_o.vbe
+		boog fifo_72b_o fifo_72b
+
+
+exec.vst : exec.vhdl fifo_72b.vst alu.vst shifter_model.vst
+		vasy -I vhdl -V -o -a -p	 exec.vhdl exec
+
+exec_model_o.vbe : exec.vst
+		boom -V -O exec_model exec_model_o
+
+exec_model.vst : exec_model_o.vbe
+		boog exec_model_o exec_model

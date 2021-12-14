@@ -10,7 +10,7 @@ entity shift_left is
 			vdd       : IN bit;
     		vss       : IN bit 
     	);
-end entity ;
+end shift_left ;
 
 
 architecture behavior of shift_left is

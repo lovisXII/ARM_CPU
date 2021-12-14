@@ -261,62 +261,8 @@ architecture behavior of reg_tb is
     BEGIN
     if rising_edge(ck) then
 
-    	read2 := rand_slv(4) ;
-		wdata1 <= rand_slv(32);
-		read1 := rand_slv(4) ;
-		wadr1 <= read1;
-		wen1 <= rand_slv(2)(1) ;
-
-		wdata2 <= rand_slv(32);
-		wadr2 <= read2;
-		wen2 <= rand_slv(2)(1) ;
-		
-		wcry <= rand_slv(2)(1) ;
-		wzero <=rand_slv(2)(1) ;
-		wneg <=rand_slv(2)(1) ;
-		wovr <=rand_slv(2)(1) ;
-		cspr_wb <=rand_slv(2)(1) ; --on autorise l'écriture
-
-		radr1 <= read1 ;
-		radr2 <= read2 ;
-		radr3 <= rand_slv(4) ;
-		radr4 <= rand_slv(4) ;
-
-		inval_adr1 <= rand_slv(4) ;
-		inval_adr2 <= rand_slv(4) ;
-		inval_czn <= rand_slv(2)(1) ;
-		inval_ovr <= rand_slv(2)(1) ;
-
-		inc_pc <= '1' ;
-		
-		--wdata1 <= (others=>'1');
-		--wadr1 <= "0000";
-		--wen1 <= '0' ;
-
-		--wdata2 <= (others=>'0');
-		--wadr2 <= "0001";
-		--wen2 <= '1' ;
-		
-		--wcry <= rand_slv(2)(1) ;
-		--wzero <=rand_slv(2)(1) ;
-		--wneg <=rand_slv(2)(1) ;
-		--wovr <=rand_slv(2)(1) ;
-		--cspr_wb <=rand_slv(2)(1) ; --on autorise l'écriture
-
-		--radr1 <= "0000" ;
-		--radr2 <= "0001" ;
-		--radr3 <= rand_slv(4) ;
-		--radr4 <= rand_slv(4) ;
-
-		--inval_adr1 <= "0010" ;
-		--inval_adr2 <= "0010" ;
-		--inval_czn <= '0' ;
-		--inval_ovr <= '0';
-
-		--inc_pc <= '1' ;
-
-		report "__________________________________________________";
-		report "reset : " & std_logic'image(reset_n)(2);
+       report "__________________________________________________";
+	   report "reset : " & std_logic'image(reset_n)(2);
        report "wdata1 : " & to_string(wdata1);
        report "wdata2 : " & to_string(wdata2); 
        report "wen1 : " & std_logic'image(wen1)(2);
@@ -360,6 +306,63 @@ architecture behavior of reg_tb is
 
 	   report "reg_pc : " & to_string(reg_pc);
 	   report "reg_pcv : " & std_logic'image(reg_pcv)(2);
+
+    	read2 := rand_slv(4) ;
+		wdata1 <= rand_slv(32);
+		read1 := rand_slv(4) ;
+		wadr1 <= read1;
+		wen1 <= rand_slv(2)(1) ;
+
+		wdata2 <= rand_slv(32);
+		wadr2 <= read2;
+		wen2 <= rand_slv(2)(1) ;
+		
+		wcry <= rand_slv(2)(1) ;
+		wzero <=rand_slv(2)(1) ;
+		wneg <=rand_slv(2)(1) ;
+		wovr <=rand_slv(2)(1) ;
+		cspr_wb <=rand_slv(2)(1) ; --on autorise l'écriture
+
+
+		radr1 <= read1 ;
+		radr2 <= read2 ;
+		radr3 <= rand_slv(4) ;
+		radr4 <= rand_slv(4) ;
+
+		inval_adr1 <= rand_slv(4) ;
+		inval_adr2 <= rand_slv(4) ;
+		inval_czn <= rand_slv(2)(1) ;
+		inval_ovr <= rand_slv(2)(1) ;
+
+		inc_pc <= '1' ;
+		
+		--wdata1 <= (others=>'1');
+		--wadr1 <= "0000";
+		--wen1 <= '0' ;
+
+		--wdata2 <= (others=>'0');
+		--wadr2 <= "0001";
+		--wen2 <= '1' ;
+		
+		--wcry <= rand_slv(2)(1) ;
+		--wzero <=rand_slv(2)(1) ;
+		--wneg <=rand_slv(2)(1) ;
+		--wovr <=rand_slv(2)(1) ;
+		--cspr_wb <=rand_slv(2)(1) ; --on autorise l'écriture
+
+		--radr1 <= "0000" ;
+		--radr2 <= "0001" ;
+		--radr3 <= rand_slv(4) ;
+		--radr4 <= rand_slv(4) ;
+
+		--inval_adr1 <= "0010" ;
+		--inval_adr2 <= "0010" ;
+		--inval_czn <= '0' ;
+		--inval_ovr <= '0';
+
+		--inc_pc <= '1' ;
+
+	    
 
 
 

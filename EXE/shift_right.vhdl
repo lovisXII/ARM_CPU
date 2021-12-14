@@ -24,38 +24,35 @@ BEGIN
     shift_right_process: PROCESS(arithmetic, shift_val, din, cin)
     variable internal_shift : Std_Logic_Vector(31 downto 0);
     variable internal_carry : Std_Logic;
-    variable start_bit : std_logic;
-    variable start_2 : std_logic_vector(1 downto 0);
-    variable start_4 : std_logic_vector(3 downto 0);
-    variable start_8 : std_logic_vector(7 downto 0);
-    variable start_16 : std_logic_vector(15 downto 0);
+    variable extend_arithmetic : std_logic_vector(15 downto 0);
     BEGIN
-        start_bit := arithmetic and din(31);
-        start_2 := start_bit & start_bit;
-        start_4 := start_2 & start_2;
-        start_8 := start_4 & start_4;
-        start_16 := start_8 & start_8;
+
+        if arithmetic = '1' THEN
+            extend_arithmetic := X"1111";
+        else 
+            extend_arithmetic := X"0000";
+        end if;
         internal_shift := din;
         internal_carry := cin;
         if shift_val(0) = '1' then
             internal_carry := internal_shift(0);
-            internal_shift := start_bit & internal_shift(31 downto 1);
+            internal_shift := extend_arithmetic(0) & internal_shift(31 downto 1);
         end if;
         if shift_val(1) = '1' then
             internal_carry := internal_shift(1);
-            internal_shift := start_2 & internal_shift(31 downto 2);
+            internal_shift := extend_arithmetic(1 downto 0)& internal_shift(31 downto 2);
         end if;
         if shift_val(2) = '1' then
             internal_carry := internal_shift(3);
-            internal_shift := start_4 & internal_shift(31 downto 4);
+            internal_shift := extend_arithmetic(3 downto 0) & internal_shift(31 downto 4);
         end if;
         if shift_val(3) = '1' then
             internal_carry := internal_shift(7);
-            internal_shift := start_8 & internal_shift(31 downto 8);
+            internal_shift := extend_arithmetic(7 downto 0) & internal_shift(31 downto 8);
         end if;
         if shift_val(4) = '1' then
             internal_carry := internal_shift(15);
-            internal_shift := start_16 & internal_shift(31 downto 16);
+            internal_shift := extend_arithmetic & internal_shift(31 downto 16);
         end if;
         cout <= internal_carry;
         dout <= internal_shift;

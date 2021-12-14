@@ -16,11 +16,10 @@ ENTITY Shifter IS
     shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
+    vdd       : IN  Std_Logic;
+    vss       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
-    cout      : OUT Std_Logic;
-    -- global interface
-    vdd       : IN  bit;
-    vss       : IN  bit );
+    cout      : OUT Std_Logic);
 END Shifter;
 
 ARCHITECTURE behavior OF Shifter IS
@@ -113,6 +112,9 @@ shifter_process_1 :PROCESS(out_shift_ror,out_shift_left,out_shift_right, shift_l
     ELSIF (shift_ror = '1') THEN
             dout <= out_shift_ror ;
             cout <= carry_out_ror ;
+    ELSE
+            dout <= X"0000000";
+            cout <= '0';
     END IF ;
 END PROCESS shifter_process_1 ;
-END ARCHITECTURE ;
+END behavior ;

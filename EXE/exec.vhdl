@@ -157,12 +157,17 @@ end component;
 
 	begin
 --  Signal assignment
-not_res_shift <= Not(res_shift);
-not_dec_op1 <= NOT(dec_op1);
 exe_pop <= NOT(dec2exe_empty) AND NOT(exe2mem_full);
 exe_push <= NOT(dec2exe_empty) AND NOT(exe2mem_full);
 exe_res <= res_alu; 
 exe_c <= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
+alu_in_op2 <= res_shift when dec_comp_op2 = '1' else not(res_shift);
+alu_in_op1 <= dec_op1 when dec_comp_op1 = '1' else not(dec_op1);
+mem_adr <= dec_op1 when dec_pre_index = '1' else res_alu;
+
+exe_dest <= dec_exe_dest;
+exe_wb <= dec_exe_wb;
+exe_flag_wb <= dec_flag_wb; 
 --  Component instantiation.
 
   	shifter_inst : shifter port map(
@@ -222,29 +227,6 @@ exe_c <= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
 					ck			 => ck,
 					vdd		 => vdd,
 					vss		 => vss);
-	mux_shift_alu : mux21
-	generic map (n => 32)
-	port map (
-		op1 => res_shift,
-		op2 => not_res_shift,
-		cmd => dec_comp_op2,
-		res => 	alu_in_op2
-		);
-	mux_op1_alu : mux21
-	generic map (n => 32)
-	port map (
-		op1 => dec_op1,
-		op2 => not_dec_op1,
-		cmd => dec_comp_op1,
-		res => 	alu_in_op1
-		);
-	mux_alu_fifo_mem : mux21
-	generic map (n => 32)
-	port map (
-		op1 => dec_op1,
-		op2 => res_alu,
-		cmd => dec_pre_index,
-		res => 	mem_adr
-		);
+
 
 end Behavior;
