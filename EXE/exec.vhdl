@@ -126,15 +126,6 @@ component Shifter
     vss       : IN  bit );
 END component;
 
-component Mux21
-	generic (n : integer);
-  PORT( op1: in std_logic_vector(n-1 downto 0);
-        op2: in std_logic_vector(n-1 downto 0);
-        cmd: in std_logic;
-        res: out std_logic_vector(n-1 downto 0)
-    );
-end component;
-
 component fifo_72b
 	port(
 		din		: in std_logic_vector(71 downto 0);

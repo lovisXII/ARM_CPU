@@ -414,8 +414,21 @@ begin
 	T4_run <= bl_i and cond; 							-- branchement et link
 	T5_run <= b_i and cond; 							-- branchement et pas de link
 	T6_run <= (stm_i or ldm_i) and cond ; 					-- acces multiples
-	--T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
+	--sur le truc du prof T3 est notre T1
+    --T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
 	--T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
+
+--optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
+    next_state <=   FETCH   when (cur_state = FETCH and T1_fetch = '1') 
+                            or    cur_state = MTRANS
+                            or    cur_state = BRANCH else
+                    RUN     when (cur_state = FETCH and T2_fetch = '1')
+                            or   (cur_state = FETCH and (T1_run = '1' or T2_run = '1' or T3_run = '1')) else
+                    LINK    when (cur_state = RUN and T4_run = '1') else
+                    BRANCH  when (cur_state = RUN and T5_run = '1')
+                            or    cur_state = LINK else
+                    MTRANS  when (cur_state = RUN and T6_run = '1') else
+                    FETCH;
 
 	Machine_etat : process(ck)
 	begin
@@ -427,32 +440,6 @@ begin
 			end if;
 		end if;
 	end process ;
-
-	Machine_etat_transition : process(T1_fetch,T2_fetch,T1_run,T2_run,T3_run,T4_run,T5_run,T6_run,T1_branch,T2_branch,cur_state) -- qu'est ce qui definiti les transisitions ?
-		begin
-				case cur_state is
-				when FETCH => if(T1_fetch = '1') then 
-								next_state <= FETCH ;
-							elsif(T2_fetch = '1') then
-								next_state <=RUN ;
-							end if;
-				when RUN =>	if(T1_run = '1' or T2_run = '1' or T3_run = '1') then 
-								next_state <= RUN ;
-							elsif(T4_run = '1') then
-								next_state <= LINK ;
-							elsif(T5_run = '1') then
-								next_state <= BRANCH ;
-							elsif(T6_run = '1') then
-								next_state <= MTRANS ;
-							end if ;
-				when MTRANS => next_state <= FETCH ;
-				when LINK => next_state <= BRANCH ;
-				--sur le truc du prof T3 est notre T1
-				when BRANCH => --if(T3_branch = '1') then ceci est une optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
-									next_state <= FETCH ;
-		end case ;							
-		end process ;
-
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------		
 	--need to be done in two steps to wait for register reads
 	first_action_process: process(ck)
@@ -643,7 +630,7 @@ begin
 	end process first_action_process;
 
 	--second process to handle the data read in the register bank
-	second_action_process: process(rdata1_signal, rdata2_signal, rdata3_signal, rdata4_signal)
+	second_action_process: process(rdata1_signal, rdata2_signal, rdata3_signal, rdata4_signal, if_ir, rv1_signal, rv2_signal, rv3_signal, rv4_signal, op_valid)
 	variable op_valid : std_logic;
 	begin
 		if (regop_t = '1') then
