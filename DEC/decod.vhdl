@@ -519,48 +519,80 @@ begin
 			end if;
 		end if;
 	end process ;
--------------------------------------------------------------------------------------------------------------------------------------------------------------------		
-	
-dec2if_push   <= '0' when cur_state = LINK or (cur_state = RUN and (T4_run or T5_run) = '1') else 
-                 not(dec2if_empty);
-if_pop_signal <= '1'when cur_state = FETCH 
-                    or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1' or T6_run = '1')) 
-                    else '0';
-dec2exe_push <= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') 
-                    or    cur_state = LINK 
-                    else '0';
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------		
+---------------------------------------------------------FIFO GESTION--------------------------------------------------------------------------------------------
+dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T4_run or T5_run) = '1') else 
+                 		not(dec2if_empty);
 
-inc_pc_signal <= dec2if_push when cur_state = RUN else '0';
+if_pop_signal 		<= '1'	when cur_state = FETCH  or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1' or T6_run = '1')) 
+                    	else '0';
+
+dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
+                    	else '0';		
+---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
+
+radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1') else
+                		"1111" when when (cur_state = RUN and T4_run = '1') else
+                		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                		"0000";
+radr2_signal 		<= if_ir(3 downto 0) when (cur_state = RUN and T3_run = '1'and (trans_t = '1' or regop_t = '1')) else '0' ;
+radr3_signal 		<= if_ir(3 downto 0) when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) else '0' ; 
+radr4_signal 		<= if_ir(11 downto 8) when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' else '0' ;
 
 
-    --RUN T3
-dec_flag_wb <=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
-radr1_signal<=  if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1') else
-                "1111" when when (cur_state = RUN and T4_run = '1') else
-                "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
-                "0000";
-dec_exe_dest<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
-                if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
-                "1110" when when (cur_state = RUN and T4_run = '1') else
-                "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
-                "0000";
+---------------------------------------------------------WRITING PORT--------------------------------------------------------------------------------------------		
+---------------------------------------------------------SHIFTER GESTION-----------------------------------------------------------------------------------------
 
-inval_adr1_signal <=    if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') else
+dec_shift_lsl 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00" else '0' ;
+dec_shift_lsr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "01" else '0' ;
+dec_shift_asr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "10" else '0' ;
+dec_shift_ror 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11"  
+				 		and cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) ;
+
+dec_shift_rrx 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11" and if_ir(11 downto 7) = "00001" else '0' ;
+
+dec_shift_val 		<= 	if_ir(11 downto 7) 		when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) = '0' else
+				 		if_ir(11 downto 8) & '0' 	when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) else
+				 		rdata4_signal(4 downto 0) 	when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) and if_ir(24) = '1'
+
+---------------------------------------------------------INVALIDATION--------------------------------------------------------------------------------------------		
+
+dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
+
+
+
+dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
+                		if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
+                		"1110" when when (cur_state = RUN and T4_run = '1') else
+                		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                		"0000";
+
+inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') else
                         "1110" when when (cur_state = RUN and T4_run = '1') else
                         "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
-                        "0000"; --
-inval1_signal   <=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
-                    not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
-                    '1' when (cur_state = RUN and T4_run or T5_run = '1') or cur_state = LINK else '0';
+                        "0000"; 
 
-inval_adr2_signal <= if_ir(19 downto 16);
-inval2_signal <= '1' when (cur_state = RUN and T3_run = '1' and trans_t = '1' and ldr_i = '1') else '0';
-inval_czn_signal <= if_ir(20) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
-inval_ovr_signal <= if_ir(20) and (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i)
-     when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
+                    	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
+                    	'1' when (cur_state = RUN and T4_run or T5_run = '1') or cur_state = LINK else '0';
 
-dec_exe_wb <= inval1_signal;
-dec_mem_wb <= inval2_signal;
+inval_adr2_signal 	<= if_ir(19 downto 16);
+
+inval2_signal 		<= '1' when (cur_state = RUN and T3_run = '1' and trans_t = '1' and ldr_i = '1') else '0';
+
+inval_czn_signal 	<= if_ir(20) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+
+inval_ovr_signal 	<= if_ir(20) and (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i)
+     					when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+
+dec_exe_wb 			<= inval1_signal;
+dec_mem_wb 			<= inval2_signal;
+--------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
+
+inc_pc_signal 		<= dec2if_push when cur_state = RUN else '0';
+
+
+
 
 
 --need to be done in two steps to wait for register reads
