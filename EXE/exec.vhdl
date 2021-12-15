@@ -35,7 +35,7 @@ entity EXE is
 			dec_cy			: in Std_Logic;
 
 	-- Alu operand selection
-			dec_comp_op1	: in Std_Logic;
+			dec_comp_op1	: in Std_Logic; -- say if we took the opposite of op1
 			dec_comp_op2	: in Std_Logic;
 			dec_alu_cy 		: in Std_Logic;
 
@@ -148,16 +148,17 @@ end component;
 
 	begin
 --  Signal assignment
-exe_pop <= NOT(dec2exe_empty) AND NOT(exe2mem_full);
-exe_push <= NOT(dec2exe_empty) AND NOT(exe2mem_full);
-exe_res <= res_alu; 
-exe_c <= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
-alu_in_op2 <= res_shift when dec_comp_op2 = '1' else not(res_shift);
-alu_in_op1 <= dec_op1 when dec_comp_op1 = '1' else not(dec_op1);
-mem_adr <= dec_op1 when dec_pre_index = '1' else res_alu;
+exe_pop 	<= NOT(dec2exe_empty) AND NOT(exe2mem_full);
+exe_push 	<= NOT(dec2exe_empty) AND NOT(exe2mem_full);
+exe_res 	<= res_alu; 
+exe_c 		<= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
 
-exe_dest <= dec_exe_dest;
-exe_wb <= dec_exe_wb;
+alu_in_op2 	<= res_shift 	when dec_comp_op2 	= '1' else not(res_shift);
+alu_in_op1 	<= dec_op1 		when dec_comp_op1 	= '1' else not(dec_op1);
+mem_adr 	<= dec_op1 		when dec_pre_index 	= '1' else res_alu;
+
+exe_dest 	<= dec_exe_dest;
+exe_wb 		<= dec_exe_wb;
 exe_flag_wb <= dec_flag_wb; 
 --  Component instantiation.
 

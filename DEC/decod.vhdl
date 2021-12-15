@@ -523,11 +523,17 @@ begin
 ---------------------------------------------------------INSTRUCTION DECODING------------------------------------------------------------------------------------
 
 ---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
+dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i) = '1' 	else '0' ; 
+dec_alu_and 	<= '1' when (and_i or tst_i or bic_i) = '1' 												else '0' ;
+dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
+dec_alu_xor		<= '1' when (eor or teq_i) = '1' 															else '0' ;
 
-dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i) = '1' else '0' ; 
-dec_alu_and 	<= '1' when (and_i or tst_i or bic_i) = '1' else '0' ;
-dec_alu_or 		<= '1' when orr_i = '1' else '0' ;
-dec_alu_xor		<= '1' when (eor or teq_i) = '1' else '0' ;
+dec_comp_op1 	<= '1' when (rsb_i or rsc_i ) = '1' 														else '0' ;
+dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' 								else '0' ; 
+
+---------------------------------------------------------CARRY GESTION ------------------------------------------------------------------------------------------
+
+dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else '0' ;
 
 ---------------------------------------------------------FIFO GESTION--------------------------------------------------------------------------------------------
 
@@ -578,21 +584,22 @@ dec_shift_val 		<= 	if_ir(11 downto 7) 		when cur_state = RUN and T3_run = '1' a
 
 ---------------------------------------------------------INVALIDATION--------------------------------------------------------------------------------------------		
 
-dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
-
-
 inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') else
                         "1110" when when (cur_state = RUN and T4_run = '1') else
                         "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
                         "0000"; 
 
+
+inval_adr2_signal 	<= if_ir(19 downto 16);
+
 inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
                     	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
                     	'1' when (cur_state = RUN and T4_run or T5_run = '1') or cur_state = LINK else '0';
 
-inval_adr2_signal 	<= if_ir(19 downto 16);
 
 inval2_signal 		<= '1' when (cur_state = RUN and T3_run = '1' and trans_t = '1' and ldr_i = '1') else '0';
+
+dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
 
 inval_czn_signal 	<= if_ir(20) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
 
