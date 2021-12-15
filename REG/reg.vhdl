@@ -123,7 +123,7 @@ architecture Behavior OF Reg is
 
 			begin
                 if rising_edge(ck) then
-                    if reset_n = '1' then
+                    if reset_n = '0' then
                         regs(0) <= X"00000000";
                         regs(1) <= X"00000000";
                         regs(2) <= X"00000000";
@@ -337,7 +337,7 @@ architecture Behavior OF Reg is
 
                     czn_valid <= czn_valid_var;
                     ovr_valid <= ovr_valid_var;
-                    -- --PC est par défaut incrémenter à chaque cycle d'horloge
+                    -- --PC est par défaut incrémenté à chaque cycle d'horloge
                     
 
                     reg_pc <= regs_var(15);
@@ -346,11 +346,11 @@ architecture Behavior OF Reg is
                     bits_valid <= valid_var;
                     czn_valid <= czn_valid_var;
                     ovr_valid <= ovr_valid_var;
-                        if inc_pc = '0' then 
-                            pc_int := to_integer(unsigned(regs(15)));
-                            pc_int := pc_int + 4;
-                            regs(15) <= std_logic_vector(to_unsigned(pc_int, 32));
-                        end if;
+                    if inc_pc = '0' then 
+                        pc_int := to_integer(unsigned(regs(15)));
+                        pc_int := pc_int + 4;
+                        regs(15) <= std_logic_vector(to_unsigned(pc_int, 32));
+                    end if;
                     end if;
                 end if;
 		end process write_regs;

@@ -87,68 +87,72 @@ end Decod;
 architecture Behavior OF Decod is
 
 component Reg
-	port(
-	-- Write Port 1 prioritaire
-		wdata1		: in Std_Logic_Vector(31 downto 0);
-		wadr1			: in Std_Logic_Vector(3 downto 0);
-		wen1			: in Std_Logic;
-
-	-- Write Port 2 non prioritaire
-		wdata2		: in Std_Logic_Vector(31 downto 0);
-		wadr2			: in Std_Logic_Vector(3 downto 0);
-		wen2			: in Std_Logic;
-
-	-- Write CSPR Port
-		wcry			: in Std_Logic;
-		wzero			: in Std_Logic;
-		wneg			: in Std_Logic;
-		wovr			: in Std_Logic;
-		cspr_wb			: in Std_Logic;
-		
-	-- Read Port 1 32 bits
-		rdata1			: out Std_Logic_Vector(31 downto 0);
-		radr1			: in Std_Logic_Vector(3 downto 0);
-		rvalid1			: out Std_Logic;
-
-	-- Read Port 2 32 bits
-		rdata2			: out Std_Logic_Vector(31 downto 0);
-		radr2			: in Std_Logic_Vector(3 downto 0);
-		rvalid2			: out Std_Logic;
-
-	-- Read Port 3 5 bits (for shift)
-		rdata3			: out Std_Logic_Vector(31 downto 0);
-		radr3			: in Std_Logic_Vector(3 downto 0);
-		rvalid3			: out Std_Logic;
-
-	-- read CSPR Port
-		cry				: out Std_Logic;
-		zero			: out Std_Logic;
-		neg				: out Std_Logic;
-		ovr				: out Std_Logic;
-		
-		reg_cznv		: out Std_Logic;
-		reg_vv			: out Std_Logic;
-
-	-- Invalidate Port 
-		inval_adr1		: in Std_Logic_Vector(3 downto 0);
-		inval1			: in Std_Logic;
-
-		inval_adr2		: in Std_Logic_Vector(3 downto 0);
-		inval2			: in Std_Logic;
-
-		inval_czn		: in Std_Logic;
-		inval_ovr		: in Std_Logic;
-
-	-- PC
-		reg_pc			: out Std_Logic_Vector(31 downto 0);
-		reg_pcv			: out Std_Logic;
-		inc_pc			: in Std_Logic;
-	
-	-- global interface
-		ck				: in Std_Logic;
-		reset_n			: in Std_Logic;
-		vdd				: in bit;
-		vss				: in bit);
+        port(
+            -- Write Port 1 prioritaire
+                wdata1		: in Std_Logic_Vector(31 downto 0); --port écriture data1 
+                wadr1			: in Std_Logic_Vector(3 downto 0); --registre écriture data1
+                wen1			: in Std_Logic; --bit enable data1, si = 1 alors on écrit
+        
+            -- Write Port 2 non prioritaire
+                wdata2		: in Std_Logic_Vector(31 downto 0);--port écriture data2
+                wadr2			: in Std_Logic_Vector(3 downto 0);--registre écriture data2
+                wen2			: in Std_Logic;--bit enable data2, si = 1 alors on écrit
+        
+            -- Write CSPR Port
+                wcry			: in Std_Logic;--valeur de la retenue en écriture
+                wzero			: in Std_Logic; --valeur de flag z
+                wneg			: in Std_Logic;--valeur de flag n
+                wovr			: in Std_Logic; --valeur de flag v
+                cspr_wb		: in Std_Logic;--bit enable des flags, si = 1 alors on écrit
+                
+            -- Read Port 1 32 bits
+                reg_rd1		: out Std_Logic_Vector(31 downto 0); --valeur du registre lue
+                radr1			: in Std_Logic_Vector(3 downto 0); -- registre lu
+                reg_v1		: out Std_Logic; --bit de validité du registre lu, que l'on envoie à l'étage décode pour analyse
+        
+            -- Read Port 2 32 bits
+                reg_rd2		: out Std_Logic_Vector(31 downto 0); --valeur du registre lue
+                radr2			: in Std_Logic_Vector(3 downto 0);-- registre lu
+                reg_v2		: out Std_Logic;--bit de validité du registre lu, que l'on envoie à l'étage décode pour analyse
+        
+            -- Read Port 3 32 bits
+                reg_rd3		: out Std_Logic_Vector(31 downto 0);
+                radr3			: in Std_Logic_Vector(3 downto 0);
+                reg_v3		: out Std_Logic;
+        
+            -- Read Port 4 5 bits
+                reg_rd4		: out Std_Logic_Vector(4 downto 0);
+                radr4			: in Std_Logic_Vector(3 downto 0);
+                reg_v4		: out Std_Logic;
+        
+            -- read CSPR Port
+                reg_cry		: out Std_Logic; --valeur des flags lues
+                reg_zero		: out Std_Logic;
+                reg_neg		: out Std_Logic;
+                reg_cznv		: out Std_Logic; --bit de validité de c,z et n
+                reg_ovr		: out Std_Logic; --valeur de l'overflow
+                reg_vv		: out Std_Logic;--bit de validité de l'overflow
+                
+            -- Invalidate Port 
+                inval_adr1	: in Std_Logic_Vector(3 downto 0); --registres invalidé par decode, donc impossible d'écrire dedans
+                inval1		: in Std_Logic; --valeur du bit de validité
+        
+                inval_adr2	: in Std_Logic_Vector(3 downto 0);
+                inval2		: in Std_Logic;
+        
+                inval_czn	: in Std_Logic;
+                inval_ovr	: in Std_Logic;
+        
+            -- PC
+                reg_pc		: out Std_Logic_Vector(31 downto 0);
+                reg_pcv		: out Std_Logic; -- port de validité de pc
+                inc_pc		: in Std_Logic; -- si = '1' on incremente pc normalement, sinon on lui ajoute l'offset d'un branch
+            
+            -- global interface
+                ck				: in Std_Logic;
+                reset_n		: in Std_Logic;
+                vdd			: in bit;
+                vss			: in bit);
 end component;
 
 component fifo -- on ne peut pas utiliser de fifo generic car c'est pas synthétisable
@@ -291,6 +295,7 @@ signal inval_ovr_signal			: Std_Logic;
 
  --Gestion de pc :
  signal reg_pc_signal : std_logic_vector(31 downto 0) ;
+ signal reg_pcv_signal : std_logic ;
  signal dec2if_push   : std_logic;
  signal inc_pc_signal : std_logic ;
 
@@ -309,6 +314,80 @@ type state_type is (FETCH,RUN,MTRANS,LINK,BRANCH) ;
 signal cur_state, next_state : state_type ;
 signal dec_out : std_logic_vector(3 downto 0) ;
 begin
+
+
+    ----------------------------------------------------------------------------------------
+                --Port map : Reg 
+    ----------------------------------------------------------------------------------------    
+    reg0 : reg port map(
+                    -- Write Port 1 prioritaire
+                    wdata1 => exe_res, --port écriture data1 
+                    wadr1 => exe_dest, --registre écriture data1
+                    wen1 => exe_wb, --bit enable data1, si = 1 alors on écrit
+            
+                -- Write Port 2 non prioritaire
+                    wdata2 => mem_res,--port écriture data2
+                    wadr2 => mem_dest,--registre écriture data2
+                    wen2 => mem_wb,--bit enable data2, si = 1 alors on écrit
+            
+                -- Write CSPR Port
+                    wcry => exe_c,--valeur de la retenue en écriture
+                    wzero => exe_z, --valeur de flag z
+                    wneg => exe_n,--valeur de flag n
+                    wovr => exe_v, --valeur de flag v
+                    cspr_wb => exe_flag_wb,--bit enable des flags, si = 1 alors on écrit
+                    
+                -- Read Port 1 32 bits
+                    reg_rd1 => rdata1_signal, --valeur du registre lue
+                    radr1 => radr1_signal,   -- registre lu
+                    reg_v1 => rv1_signal, --bit de validité du registre lu, que l'on envoie à l'étage décode pour analyse
+            
+                -- Read Port 2 32 bits
+                    reg_rd2 => rdata2_signal, --valeur du registre lue
+                    radr2 => radr2_signal,-- registre lu
+                    reg_v2 => rv2_signal,--bit de validité du registre lu, que l'on envoie à l'étage décode pour analyse
+            
+                -- Read Port 3 32 bits
+                    reg_rd3 => rdata3_signal,
+                    radr3 => radr3_signal,
+                    reg_v3 => rv3_signal,
+            
+                -- Read Port 4 5 bits
+                    reg_rd4 => rdata4_signal,
+                    radr4 => radr4_signal,
+                    reg_v4 => rv4_signal,
+            
+                -- read CSPR Port
+                    reg_cry => cry, --valeur des flags lues
+                    reg_zero => zero,
+                    reg_neg => neg,
+                    reg_cznv => reg_cznv_signal, --bit de validité de c,z et n
+                    reg_ovr => ovr, --valeur de l'overflow
+                    reg_vv => reg_vv_signal,--bit de validité de l'overflow
+                    
+                -- Invalidate Port 
+                    inval_adr1 => inval_adr1_signal, --registres invalidé par decode, donc impossible d'écrire dedans
+                    inval1 => inval1_signal, --valeur du bit de validité
+            
+                    inval_adr2 => inval_adr2_signal,
+                    inval2 => inval2_signal,
+            
+                    inval_czn => inval_czn_signal,
+                    inval_ovr => inval_ovr_signal,
+            
+                -- PC
+                    reg_pc => reg_pc_signal,
+                    reg_pcv => reg_pcv_signal, -- port de validité de pc
+                    inc_pc => inc_pc_signal, -- si = '1' on incremente pc normalement, sinon on lui ajoute l'offset d'un branch
+                
+                -- global interface
+                    ck => ck,
+                    reset_n => reset_n,
+                    vdd => vdd,
+                    vss => vss);
+    ----------------------------------------------------------------------------------------
+                --Port Map : FIFO 
+    ----------------------------------------------------------------------------------------
 
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
@@ -441,7 +520,50 @@ begin
 		end if;
 	end process ;
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------		
-	--need to be done in two steps to wait for register reads
+	
+dec2if_push   <= '0' when cur_state = LINK or (cur_state = RUN and (T4_run or T5_run) = '1') else 
+                 not(dec2if_empty);
+if_pop_signal <= '1'when cur_state = FETCH 
+                    or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1' or T6_run = '1')) 
+                    else '0';
+dec2exe_push <= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') 
+                    or    cur_state = LINK 
+                    else '0';
+
+inc_pc_signal <= dec2if_push when cur_state = RUN else '0';
+
+
+    --RUN T3
+dec_flag_wb <=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
+radr1_signal<=  if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1') else
+                "1111" when when (cur_state = RUN and T4_run = '1') else
+                "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                "0000";
+dec_exe_dest<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
+                if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
+                "1110" when when (cur_state = RUN and T4_run = '1') else
+                "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                "0000";
+
+inval_adr1_signal <=    if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') else
+                        "1110" when when (cur_state = RUN and T4_run = '1') else
+                        "1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                        "0000"; --
+inval1_signal   <=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
+                    not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
+                    '1' when (cur_state = RUN and T4_run or T5_run = '1') or cur_state = LINK else '0';
+
+inval_adr2_signal <= if_ir(19 downto 16);
+inval2_signal <= '1' when (cur_state = RUN and T3_run = '1' and trans_t = '1' and ldr_i = '1') else '0';
+inval_czn_signal <= if_ir(20) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+inval_ovr_signal <= if_ir(20) and (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i)
+     when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+
+dec_exe_wb <= inval1_signal;
+dec_mem_wb <= inval2_signal;
+
+
+--need to be done in two steps to wait for register reads
 	first_action_process: process(ck)
 	begin
 		if rising_edge(ck) then
@@ -455,6 +577,7 @@ begin
 					if (T1_run = '1') then  -- sending new pc to dec2if if not full
 						if_pop_signal <= '0';
 						dec2exe_push <= '0';
+                        dec2if_push <= '1';
 						inc_pc_signal <= if2dec_empty;
 					elsif (T2_run = '1') then -- predicat is false, instruction must be ignore
 						if_pop_signal <= '1'; -- ifecth send instruction to decode
