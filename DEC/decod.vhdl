@@ -455,7 +455,8 @@ begin
 	eor_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"1" else '0';
 	sub_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"2" else '0';
 	rsb_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"3" else '0';
-	add_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"4" else '0';
+	add_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"4" else 
+				 when branch_t = '1'							   else '0'; -- dans le cas d'un branchement l'alu doit forcement faire une addition entre pc et l'offset
 	adc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"5" else '0';
 	sbc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"6" else '0';
 	rsc_i <= '1' when regop_t = '1' and if_ir(24 downto 21) = X"7" else '0';
@@ -470,7 +471,7 @@ begin
 
 
 --DECODING BRANCHEMENT INSTRUCTION :
--- Dans le cas d'un branchement, on regarde si la condition est vraie, si c'est le cas on invalide pc et on change son calcul par l'offset ;
+
 
 	bl_i 	<= '1' when if_ir(24) = '1' and branch_t ='1' else '0'; -- le branchement fait un link
 	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0'; -- le branchement ne fait pas de link	
@@ -519,8 +520,17 @@ begin
 			end if;
 		end if;
 	end process ;
------------------------------------------------------------------------------------------------------------------------------------------------------------------		
+---------------------------------------------------------INSTRUCTION DECODING------------------------------------------------------------------------------------
+
+---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
+
+dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i) = '1' else '0' ; 
+dec_alu_and 	<= '1' when (and_i or tst_i or bic_i) = '1' else '0' ;
+dec_alu_or 		<= '1' when orr_i = '1' else '0' ;
+dec_alu_xor		<= '1' when (eor or teq_i) = '1' else '0' ;
+
 ---------------------------------------------------------FIFO GESTION--------------------------------------------------------------------------------------------
+
 dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T4_run or T5_run) = '1') else 
                  		not(dec2if_empty);
 
@@ -531,16 +541,27 @@ dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '
                     	else '0';		
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 
-radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1') else
-                		"1111" when when (cur_state = RUN and T4_run = '1') else
-                		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') 						else
+                		"1111" 				when cur_state 	= RUN 	and T4_run = '1' 						else
+                		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";
-radr2_signal 		<= if_ir(3 downto 0) when (cur_state = RUN and T3_run = '1'and (trans_t = '1' or regop_t = '1')) else '0' ;
-radr3_signal 		<= if_ir(3 downto 0) when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) else '0' ; 
-radr4_signal 		<= if_ir(11 downto 8) when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' else '0' ;
+radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN and T3_run = '1'	and (trans_t 	= '1' 	or regop_t = '1')) 		else '0' ;
+radr3_signal 		<= if_ir (3 	downto 0) 	when cur_state 	= RUN and T3_run = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) else '0' ; 
+radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and T3_run = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' else '0' ;
 
 
----------------------------------------------------------WRITING PORT--------------------------------------------------------------------------------------------		
+---------------------------------------------------------WRITING PORT & OP 1 & OP 2 VALUE--------------------------------------------------------------------------------------------
+dec_op1 			<=  rdata1_signal ;
+dec_op2 			<= 	rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else
+						"000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
+						"000000" & if_ir(23 downto 0) & "00" 			when cur_state = LINK  																									else -- dans le cas du link on va sommer pc avec l'offset  x 4
+						'0' ;
+
+dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
+                		if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
+                		"1110" when when (cur_state = RUN and T4_run = '1') else
+                		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
+                		"0000";		
 ---------------------------------------------------------SHIFTER GESTION-----------------------------------------------------------------------------------------
 
 dec_shift_lsl 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00" else '0' ;
@@ -559,13 +580,6 @@ dec_shift_val 		<= 	if_ir(11 downto 7) 		when cur_state = RUN and T3_run = '1' a
 
 dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1') else '0';
 
-
-
-dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
-                		if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1') else
-                		"1110" when when (cur_state = RUN and T4_run = '1') else
-                		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
-                		"0000";
 
 inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') else
                         "1110" when when (cur_state = RUN and T4_run = '1') else
