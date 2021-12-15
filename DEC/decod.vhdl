@@ -529,7 +529,8 @@ dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
 dec_alu_xor		<= '1' when (eor or teq_i) = '1' 															else '0' ;
 
 dec_comp_op1 	<= '1' when (rsb_i or rsc_i ) = '1' 														else '0' ;
-dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' 								else '0' ; 
+dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(23) = '0')
+					else '0' ; 
 
 ---------------------------------------------------------CARRY GESTION ------------------------------------------------------------------------------------------
 
@@ -608,6 +609,31 @@ inval_ovr_signal 	<= if_ir(20) and (sub_i or rsb_i or add_i or adc_i or sbc_i or
 
 dec_exe_wb 			<= inval1_signal;
 dec_mem_wb 			<= inval2_signal;
+
+--------------------------------------------------------- MEMORY GESTION ----------------------------------------------------------------------------------------
+
+dec_pre_index 		<= if_ir(24) when cur_state = RUN and T3_run = '1' and trans_t ='1' 
+					   else '0' ;
+
+dec_mem_up_down 	<= if_ir(23) when cur_state = RUN and T3_run = '1' and trans_t ='1' 
+					   else '0' ; 
+
+dec_mem_lw 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(21) = '0'
+					    else '0' ;
+
+dec_mem_sw 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(21) = '0'
+					    else '0' ;
+
+dec_mem_lb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(21) = '1'
+					    else '0' ;
+
+dec_mem_sb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(21) = '1'
+					    else '0' ;
+
+dec_mem_dest		<= if_ir(15 downto 12); when cur_state = RUN and T3_run = '1' and trans_t = '1' 
+					   else '0' ;
+
+
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
 inc_pc_signal 		<= dec2if_push when cur_state = RUN else '0';
