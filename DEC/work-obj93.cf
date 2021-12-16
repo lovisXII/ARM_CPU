@@ -1,0 +1,4 @@
+v 4
+file . "decod.vhdl" "95722b84bd245c69956c809029d4c0e26457e651" "20211216194815.783":
+  entity decod at 1( 0) + 0 on 13;
+  architecture behavior of decod at 87( 2706) + 0 on 14;
