@@ -76,7 +76,6 @@ signal dec_pop 			:  	Std_Logic; --
 signal mem_res 			:   Std_Logic_Vector(31 downto 0);
 signal mem_dest			:   Std_Logic_Vector(3 downto 0);
 signal mem_wb 			:   Std_Logic;
-signal 
 	-- global  terface
 signal ck		 		:   Std_Logic;
 signal reset_n 			:   Std_Logic;
@@ -164,7 +163,7 @@ end component ;
 
 begin 
 
-decod0 : decod port map
+decod0 : decod port map (   
 	-- Exec  operands
 			dec_op1 => dec_op1,
 			dec_op2 => dec_op2,
@@ -238,7 +237,7 @@ decod0 : decod port map
 			ck => ck,
 			reset_n => reset_n,
 			vdd => vdd,
-			vss => vss,
+			vss => vss
 );
 
 clock_process : PROCESS
@@ -264,9 +263,9 @@ clock_process : PROCESS
     return b;
     end function;
 
-    function to_string ( a: std_logic) return string is
+    function to_string ( a: std_logic) return CHARACTER is
       begin
-        return std_logic'image(exe_c)(2);
+        return std_logic'image(a)(2);
       end function;
 
     impure FUNCTION rand_slv(len : integer) return std_logic_vector is
@@ -288,11 +287,15 @@ clock_process : PROCESS
     BEGIN
     if rising_edge(ck) then
        if (counter = 0) then
-        reset_n <= '0';
-       elsif (counter = 1) then
+            reset_n <= '0';
+        elsif (counter = 1) then
+            reset_n <= '0';
+        elsif (counter = 2) then
+            reset_n <= '0';
+        elsif (counter = 3) then
         reset_n <= '1';
         -- add r0, r0, 127
-        if_ir   <= "1110 00 1 0100 1 0000 0000 0000 1111111";
+        if_ir   <= "11100010100100000000000001111111";
 
         exe_pop <= '0';
         exe_res	<= X"00000000";
@@ -355,10 +358,6 @@ clock_process : PROCESS
         report "dec_alu_or : " & to_string(dec_alu_or); 
         report "dec_alu_xor : " & to_string(dec_alu_xor); 
 
-		report "------------------ Exe Write Back to reg----------------------";
-
-
-
 		report "------------------ Ifetch interface----------------------";
         report "dec_pc : " & to_string(dec_pc); 
 
@@ -366,10 +365,10 @@ clock_process : PROCESS
         report "dec2if_empty : " & to_string(dec2if_empty); 
 
         report "dec_pop : " & to_string(dec_pop); 
-       elsif (counter = 2) then
-       elsif (counter = 3) then
-       elsif (counter = 4) then
        elsif (counter = 5) then
+       elsif (counter = 6) then
+       elsif (counter = 7) then
+            counter := 2;
        end if;
        counter := counter + 1;
     end if;

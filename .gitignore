@@ -1,2 +1,5 @@
 *.o
-*.cf *.vcd *.vst *.vbe
+*.cf 
+*.vcd 
+*.vst 
+*.vbe
