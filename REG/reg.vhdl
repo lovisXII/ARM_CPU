@@ -140,9 +140,13 @@ architecture Behavior OF Reg is
                         regs(13) <= X"00000000";
                         regs(14) <= X"00000000";
                         regs(15) <= X"00000000";
-                        czn_valid <= '0';
-                        ovr_valid <= '0';
-                        bits_valid <= X"0000";
+                        c <= '0';
+                        z <= '0';
+                        n <= '0';
+                        ovr <= '0';
+                        czn_valid <= '1';
+                        ovr_valid <= '1';
+                        bits_valid <= X"1111";
                     else
                         -- Write to register 
                     -- Le calcul de pc est fait par l'étage exec, dans le cas d'un branchement la nouvelle adresse de pc est contenue dans wdata1

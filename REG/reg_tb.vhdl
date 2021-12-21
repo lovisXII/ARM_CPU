@@ -222,7 +222,7 @@ architecture behavior of reg_tb is
   	reset: process
   		begin
   			reset_n <= '0';
-  			wait for 4 ns;
+  			wait for 12 ns;
   			reset_n <= '1';
   			wait;
   		end process;
