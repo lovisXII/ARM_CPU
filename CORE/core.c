@@ -9,7 +9,6 @@ int main(int argc, char const *argv[])
 }
 
 
-void interface(char* a, char b, char* c) {
-    c[0] = 2;
-    c[31] = 2;
+int get_inst(int a) {
+    return -1;
 }
