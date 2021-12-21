@@ -64,15 +64,13 @@ signal reset_n			:  Std_Logic;
 signal vdd				:  bit;
 signal vss				: bit ;
 
-procedure interface (
-    signal if_adr : in Std_Logic_Vector(31 downto 0);
-    signal if_adr_valid	: in Std_Logic;
-    signal mem_adr			: out Std_Logic_Vector(31 downto 0)
-    ) is
+function get_inst (
+     if_adr         :  integer
+    ) return integer is
 begin
   assert false severity failure;
-end interface;
-attribute foreign of interface : procedure is "VHPIDIRECT interface";
+end get_inst;
+attribute foreign of get_inst : function is "VHPIDIRECT get_inst";
 
 BEGIN 
 
@@ -113,9 +111,11 @@ BEGIN
    
    
     testproc: process(ck)
+        variable inst: Std_Logic_Vector(31 downto 0);
    begin
-       interface(if_adr, if_adr_valid, mem_adr);
-       report std_logic'image(mem_adr(0));
+       inst := std_logic_vector(to_signed(get_inst(to_integer(signed(if_adr))), 32));
+       report std_logic'image(inst(0));
+       ic_inst <= inst(31 downto 0);
    end process testproc;
      
 
