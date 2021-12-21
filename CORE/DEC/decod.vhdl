@@ -155,11 +155,10 @@ component Reg
                 vss			: in bit);
 end component;
 
-component fifo -- on ne peut pas utiliser de fifo generic car c'est pas synthétisable
-	generic(WIDTH: positive);
+component fifo_32b -- on ne peut pas utiliser de fifo generic car c'est pas synthétisable
 	port(
-		din		: in std_logic_vector(WIDTH-1 downto 0);
-		dout		: out std_logic_vector(WIDTH-1 downto 0);
+		din		: in std_logic_vector(31 downto 0);
+		dout		: out std_logic_vector(31 downto 0);
 
 		-- commands
 		push		: in std_logic;
@@ -306,6 +305,10 @@ signal dec2exe_push : std_logic;
 
 signal dec_mem_up_down : std_logic ;
 
+-- Fifo gestion :
+
+signal dec2if_full : std_logic ;
+
 -- DECOD FSM
 
 --Machine a etat :
@@ -389,6 +392,23 @@ begin
                 --Port Map : FIFO 
     ----------------------------------------------------------------------------------------
 
+    dec2if : fifo_32b port map(
+	din => reg_pc_signal ,
+	dout => dec_pc , 
+
+	-- commands
+	push => dec2if_push ,
+	pop => if_pop ,
+
+	-- flags
+	full => dec2if_full ,
+	empty => dec2if_empty ,
+
+	reset_n => reset_n ,
+	ck => ck ,
+	vdd => vdd ,
+	vss => vss
+	);
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
 
@@ -560,7 +580,11 @@ if_pop_signal 		<= '1'	when cur_state = FETCH  or   (cur_state = RUN and (T1_run
                     	else '0';
 
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
-                    	else '0';		
+                    	else '0';	
+
+dec2if_full 		<= not(dec2if_empty_signal) ;
+
+
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 
 radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') 						else
