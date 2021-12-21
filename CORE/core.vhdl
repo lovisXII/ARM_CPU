@@ -57,10 +57,10 @@ Component IFetch
 			vss				: in bit);
 end Component;
 
-Component fifo_129b
+Component fifo_125b
 	PORT(
-		din		: in std_logic_vector(128 downto 0);
-		dout		: out std_logic_vector(128 downto 0);
+		din		: in std_logic_vector(124 downto 0);
+		dout		: out std_logic_vector(124 downto 0);
 
 		-- commands
 		push		: in std_logic;
@@ -325,18 +325,23 @@ Signal mem_dest		: Std_Logic_Vector(3 downto 0);
 Signal mem_wb			: Std_Logic;
 
 
-Signal dec2exe_output 	: Std_Logic_Vector(128 downto 0) ;
-Signal dec2exe_input 	: Std_Logic_Vector(128 downto 0) ;
-Signal dec2exe_full  	: Std_Logic ; 
-
+Signal dec2exe_output 	 	: Std_Logic_Vector(124 downto 0) ;
+Signal dec2exe_input 	 	: Std_Logic_Vector(124 downto 0) ;
+Signal dec2exe_full  	 	: Std_Logic ; 
+Signal dec_alu_cmd_signal	: Std_Logic_Vector(1 downto 0) ;
 begin
 
 
-dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
-			   		dec_mem_data 		& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
-			   		dec_shift_lsl 		& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
-			   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy  	& dec_alu_add 	& dec_alu_and  	&
-			   		dec_alu_add 		& dec_alu_or 	& dec_alu_xor ;
+dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_flag_wb 	&
+					   		dec_mem_data 		& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
+					   		dec_shift_lsl 		& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
+					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy  	&
+					   		dec_alu_add 		& dec_alu_and  	& dec_alu_or 	& dec_alu_xor ;
+
+dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else
+							"01" when dec2exe_output(2)		= '1' else
+							"10" when dec2exe_output(1) 	= '1' else
+							"11" when dec2exe_output(0) 	= '1' ;
 	ifetch_i : ifetch
 	port map (
 	-- Icache interface
@@ -404,7 +409,7 @@ dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
 					dec_alu_xor => dec_alu_xor ,
 
 	-- Exe Write Back to reg
-					exe_res			=> exe_res,
+					exe_res				=> exe_res,
 
 					exe_c				=> exe_c,
 					exe_v				=> exe_v,
@@ -437,7 +442,7 @@ dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
 					vdd	 			=> vdd,
 					vss	 			=> vss);
 
-	dec2exe : fifo_129b 
+	dec2exe : fifo_125b 
 	port map(
 		din 	=> 	dec2exe_input ,	
 
@@ -463,48 +468,48 @@ dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
 					exe_pop			=> exe_pop,
 
 	-- Decode interface operands
-					dec_op1			=> dec2exe_input(128 downto 97),
-					dec_op2			=> dec2exe_input(96 downto 65 ),
-					dec_exe_dest	=> dec2exe_input(64 downto 61),
-					dec_exe_wb		=> dec2exe_input(59),
-					dec_flag_wb		=> dec_flag_wb,
+					dec_op1			=> dec2exe_output(128 downto 97),
+					dec_op2			=> dec2exe_output(96 downto 65 ),
+					dec_exe_dest	=> dec2exe_output(64 downto 61),
+					dec_exe_wb		=> dec2exe_output(60),
+					dec_flag_wb		=> dec2exe_output(59),
 
 	-- Decode to mem interface 
-					dec_mem_data	=> dec_mem_data,
-					dec_mem_dest	=> dec_mem_dest,
-					dec_pre_index 	=> dec_pre_index ,
+					dec_mem_data	=> dec2exe_output(58 downto 27),
+					dec_mem_dest	=> dec2exe_output(26 downto 23),
+					dec_pre_index 	=> dec2exe_output(22) ,
 
-					dec_mem_lw		=> dec_mem_lw,
-					dec_mem_lb		=> dec_mem_lb,
-					dec_mem_sw		=> dec_mem_sw,
-					dec_mem_sb		=> dec_mem_sb,
+					dec_mem_lw		=> dec2exe_output(21),
+					dec_mem_lb		=> dec2exe_output(20),
+					dec_mem_sw		=> dec2exe_output(19),
+					dec_mem_sb		=> dec2exe_output(18),
 
 	-- Shifter command
-					dec_shift_lsl	=> dec_shift_lsl,
-					dec_shift_lsr	=> dec_shift_lsr,
-					dec_shift_asr	=> dec_shift_asr,
-					dec_shift_ror	=> dec_shift_ror,
-					dec_shift_rrx	=> dec_shift_rrx,
-					dec_shift_val	=> dec_shift_val,
-					dec_cy			=> dec_cy,
+					dec_shift_lsl	=> dec2exe_output(17),
+					dec_shift_lsr	=> dec2exe_output(16),
+					dec_shift_asr	=> dec2exe_output(15),
+					dec_shift_ror	=> dec2exe_output(14),
+					dec_shift_rrx	=> dec2exe_output(13),
+					dec_shift_val	=> dec2exe_output(12 downto 8),
+					dec_cy			=> dec2exe_output(7),
 
 	-- Alu operand selection
-					dec_comp_op1	=> dec_comp_op1,
-					dec_comp_op2	=> dec_comp_op2,
-					dec_alu_cy 		=> dec_alu_cy ,
+					dec_comp_op1	=> dec2exe_output(6),
+					dec_comp_op2	=> dec2exe_output(5),
+					dec_alu_cy 		=> dec2exe_output(4) ,
 
 	-- Alu command
-					dec_alu_cmd		=> dec_alu_cmd,
+					dec_alu_cmd		=> dec_alu_cmd_signal ,
 
 	-- Exe bypass to decod
 					exe_res			=> exe_res,
 
-					exe_c				=> exe_c,
-					exe_v				=> exe_v,
-					exe_n				=> exe_n,
-					exe_z				=> exe_z,
+					exe_c			=> exe_c,
+					exe_v			=> exe_v,
+					exe_n			=> exe_n,
+					exe_z			=> exe_z,
 
-					exe_dest			=> exe_dest,
+					exe_dest		=> exe_dest,
 					exe_wb			=> exe_wb,
 					exe_flag_wb		=> exe_flag_wb,
 
@@ -523,7 +528,7 @@ dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
 
 	-- global interface
 					reset_n			=> reset_n,
-					ck		 			=> ck,
+					ck		 		=> ck,
 					vdd	 			=> vdd,
 					vss	 			=> vss);
 

@@ -39,7 +39,7 @@ ARCHITECTURE BEHAVIOR of ALU IS
                 --   WHEN OTHERS => res_add := X"00000000";
                 -- END CASE ;
 
-                if cmd(0) = '0' and cmd(1) = '0' then
+                if cmd(0) = '0' and cmd(1) = '0' then 
                     res_var := res_add(31 downto 0);
                     cout <= res_add(32);
                 elsif cmd(0) = '0' and cmd(1) = '1' then

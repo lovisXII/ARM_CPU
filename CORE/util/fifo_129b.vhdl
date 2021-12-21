@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 ENTITY fifo_129b IS
 	PORT(
-		din		: in std_logic_vector(128 downto 0);
-		dout		: out std_logic_vector(128 downto 0);
+		din		: in std_logic_vector(129 downto 0);
+		dout		: out std_logic_vector(129 downto 0);
 
 		-- commands
 		push		: in std_logic;
@@ -23,7 +23,7 @@ END fifo_129b;
 
 architecture dataflow of fifo_129b is
 
-signal fifo_d	: std_logic_vector(128 downto 0);
+signal fifo_d	: std_logic_vector(129 downto 0);
 signal fifo_v	: std_logic;
 
 -- 	une fifo est pleine quand :

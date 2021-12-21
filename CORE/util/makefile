@@ -10,7 +10,7 @@ MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib
 GHDL?=ghdl
 GHDLFLAGS?=--workdir=$(WORKDIR)
 GHDLRUNFLAGS?=
-COMPONENTS=fifo_72b fifo_32b fifo_129b
+COMPONENTS=fifo_72b fifo_32b fifo_129b fifo_125b
 MODS=$(COMPONENTS)
 
 # Default target : elaborate
@@ -54,3 +54,12 @@ fifo_129b_o.vbe : fifo_129b.vbe
 
 fifo_129b.vst : fifo_129b_o.vbe
 		boog fifo_129b_o fifo_129b
+
+fifo_125b.vbe: fifo_125b.vhdl
+		vasy -I vhdl -V -o -p -a fifo_125b.vhdl fifo_125b
+
+fifo_125b_0.vbe : fifo_125b.vbe
+		boom -V fifo_125b fifo_125b_0
+
+fifo_125b.vst : fifo_125b_0.vbe
+		boog fifo_125b_0 fifo_125b
