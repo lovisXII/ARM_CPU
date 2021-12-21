@@ -201,7 +201,7 @@ decod0 : decod port map
 	-- Exec Synchro
 			dec2exe_empty => dec2exe_empty,
 			exe_pop => exe_pop,
-			dec2exe_push => dec2exe_push ;
+			dec2exe_push => dec2exe_push ,
 
 	-- Alu command
 			dec_alu_add => dec_alu_add,

@@ -431,26 +431,26 @@ begin
 
 	dec2exe : fifo_129b 
 	port map(
-		din <= dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
-			   dec_mem_data 	& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
-			   dec_shift_lsl 	& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
-			   dec_cy 			& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy 	& dec_alu_cy 	& dec_alu_add 	& dec_alu_and  	&
-			   dec_alu_add 		& dec_alu_or 	& dec_alu_xor ,	
+		din 	<= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
+			   		dec_mem_data 	& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
+			   		dec_shift_lsl 	& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
+			   		dec_cy 			& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy 	& dec_alu_cy 	& dec_alu_add 	& dec_alu_and  	&
+			   		dec_alu_add 		& dec_alu_or 	& dec_alu_xor ,	
 
-		dout <= output_fifo_129b ,		
+		dout 	<= output_fifo_129b ,		
 
 		-- commands
-		push <=	dec2exe_push ,
-		pop	<= exe_pop ,	
+		push 	<=	dec2exe_push ,
+		pop		<= exe_pop ,	
 
 		-- flags
-		full <= not(dec2exe_empty) ,
-		empty <= dec2exe_empty ,
+		full 	<= not(dec2exe_empty) ,
+		empty 	<= dec2exe_empty ,
 
 		reset_n	<= reset_n ,
 		ck		<= ck ,
 		vdd		<= vdd ,
-		vss	<= vss	
+		vss		<= vss	
 	);
 	exec_i : exec
 	port map (
