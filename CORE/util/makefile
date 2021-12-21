@@ -24,3 +24,31 @@ analyse: $(addsuffix .vhdl,$(MODS))
 
 clean:
 		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+
+fifo_72b.vbe: fifo_72b.vhdl
+		vasy -I vhdl -V -o -p -a fifo_72b.vhdl fifo_72b
+
+fifo_72b_o.vbe : fifo_72b.vbe
+		boom -V fifo_72b fifo_72b_o
+
+fifo_72b.vst : fifo_72b_o.vbe
+		boog fifo_72b_o fifo_72b
+
+fifo_32b.vbe: fifo_32b.vhdl
+		vasy -I vhdl -V -o -p -a fifo_32b.vhdl fifo_32b
+
+fifo_32b_o.vbe : fifo_32b.vbe
+		boom -V fifo_32b fifo_32b_o
+
+fifo_32b.vst : fifo_32b_o.vbe
+		boog fifo_32b_o fifo_32b
+
+
+fifo_129b.vbe: fifo_129b.vhdl
+		vasy -I vhdl -V -o -p -a fifo_129b.vhdl fifo_129b
+
+fifo_129b_o.vbe : fifo_129b.vbe
+		boom -V fifo_129b fifo_129b_o
+
+fifo_129b.vst : fifo_129b_o.vbe
+		boog fifo_129b_o fifo_129b
