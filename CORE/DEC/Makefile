@@ -3,7 +3,7 @@
 # Command used to generate this makefile:
 # ghdl --gen-makefile exec_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
-WORKDIR?=../../work
+WORKDIR=../../work
 
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL?=ghdl
@@ -18,6 +18,7 @@ all : elab
 
 # Elaborate target.
 elab : analyse
+		cd ../util && make analyse
 		$(GHDL) -c $(GHDLFLAGS) -e $(TB)
 
 .PHONY: run clean
