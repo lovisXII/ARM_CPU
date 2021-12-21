@@ -1,4 +1,0 @@
-v 4
-file . "fifo.vhdl" "bf3dd6256272fa9ed3e2de51b31268c4f18f29dc" "20211115113430.508":
-  entity fifo at 1( 0) + 0 on 11;
-  architecture dataflow of fifo at 26( 443) + 0 on 12;
