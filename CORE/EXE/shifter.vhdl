@@ -16,8 +16,8 @@ ENTITY Shifter IS
     shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
-    vdd       : IN  Std_Logic;
-    vss       : IN  Std_Logic;
+    vdd		: in bit;
+    vss		: in bit;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic);
 END Shifter;
@@ -33,8 +33,8 @@ ARCHITECTURE behavior OF Shifter IS
     shift_value :       in std_logic_vector(4 downto 0);
     dout :              out std_logic_vector(31 downto 0);
     carry_out :         out std_logic ;
-    vdd       : IN  Std_Logic;
-    vss       : IN  Std_Logic 
+    vdd		: in bit;
+    vss		: in bit 
     );
     
     end component ;
@@ -45,8 +45,8 @@ ARCHITECTURE behavior OF Shifter IS
     shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
-    vdd       : in Std_Logic ;
-    vss       : in Std_Logic ;
+    vdd		: in bit ;
+    vss		: in bit ;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic
     );    
@@ -59,8 +59,8 @@ ARCHITECTURE behavior OF Shifter IS
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); 
     cout      : OUT Std_Logic ;
-    vdd       : IN  Std_Logic;
-    vss       : IN  Std_Logic );
+    vdd		: in bit;
+    vss		: in bit );
     end component ;
 
 BEGIN

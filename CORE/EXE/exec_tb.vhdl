@@ -80,8 +80,8 @@ component EXEC
   -- global interface
       ck          : in Std_logic;
       reset_n     : in Std_logic;
-      vdd       : in Std_Logic;
-      vss       : in Std_Logic);
+      vdd		: in bit;
+      vss		: in bit);
 end component;
 
      signal      dec2exe_empty :  Std_logic;
@@ -140,8 +140,8 @@ end component;
      signal      mem_pop     :  Std_logic;
      signal      ck          :  Std_logic;
      signal      reset_n     :  Std_logic;
-     signal      vdd       :  Std_Logic;
-     signal      vss       :  Std_Logic;
+     signal      vdd		: bit;
+     signal      vss		: bit;
 
   BEGIN 
 

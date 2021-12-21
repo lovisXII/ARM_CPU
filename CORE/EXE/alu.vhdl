@@ -16,8 +16,8 @@ ENTITY ALU IS
          z    : out Std_Logic;
          n    : out Std_Logic;
          v    : out Std_Logic;
-         vdd  : in  bit;
-         vss  : in  bit);
+         vdd		: in bit;
+         vss		: in bit);
 END ALU ;
 
 ARCHITECTURE BEHAVIOR of ALU IS

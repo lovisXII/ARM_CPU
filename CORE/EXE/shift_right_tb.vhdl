@@ -16,7 +16,7 @@ ARCHITECTURE BEHAVIOR OF shift_right_tb IS
   SIGNAL arithmetic,cin,cout : std_logic ;
   SIGNAL din,dout : std_logic_vector(31 downto 0) ;
   SIGNAL shift_val : std_logic_vector(4 downto 0) ;
-  SIGNAL vdd, vss : Std_Logic ;
+  SIGNAL vdd, vss : bit ;
 
   COMPONENT shift_right IS
     PORT(
@@ -27,8 +27,8 @@ ARCHITECTURE BEHAVIOR OF shift_right_tb IS
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic;
     -- global interface
-    vdd       : IN  Std_Logic;
-    vss       : IN  Std_Logic );
+    vdd		: in bit;
+    vss		: in bit );
   END COMPONENT ;
 
   BEGIN 

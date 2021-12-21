@@ -28,6 +28,7 @@ run : elab
 
 # Targets to analyze libraries
 analyse: $(addsuffix .vhdl,$(MODS))
+		cd ../util && make analyse
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
