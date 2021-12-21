@@ -463,9 +463,9 @@ dec2exe_input <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
 					exe_pop			=> exe_pop,
 
 	-- Decode interface operands
-					dec_op1			=> dec2exe_input(128 downto 96),
-					dec_op2			=> dec2exe_input(96 downto 64 ),
-					dec_exe_dest	=> dec2exe_input(64 downto 60),
+					dec_op1			=> dec2exe_input(128 downto 97),
+					dec_op2			=> dec2exe_input(96 downto 65 ),
+					dec_exe_dest	=> dec2exe_input(64 downto 61),
 					dec_exe_wb		=> dec2exe_input(59),
 					dec_flag_wb		=> dec_flag_wb,
 
