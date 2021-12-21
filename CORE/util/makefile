@@ -25,6 +25,8 @@ analyse: $(addsuffix .vhdl,$(MODS))
 clean:
 		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
 
+synth: fifo_72b.vst fifo_32b.vst fifo_129b.vst
+
 fifo_72b.vbe: fifo_72b.vhdl
 		vasy -I vhdl -V -o -p -a fifo_72b.vhdl fifo_72b
 
