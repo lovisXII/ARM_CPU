@@ -57,17 +57,17 @@ signal if2dec_full	: std_logic;
 begin
 
 	if2dec : fifo_32b
-	port map (	din		=> ic_inst,
-					dout		=> if_ir,
+	port map (		din		=> ic_inst,
+					dout	=> if_ir,
 
-					push		 => if2dec_push,
+					push	 => if2dec_push,
 					pop		 => dec_pop,
 
-					empty		 => if2dec_empty,
-					full		 => if2dec_full,
+					empty	 => if2dec_empty,
+					full	 => if2dec_full,
 
 					reset_n	 => reset_n,
-					ck			 => ck,
+					ck		 => ck,
 					vdd		 => vdd,
 					vss		 => vss);
 
