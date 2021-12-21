@@ -480,6 +480,8 @@ begin
 
 --DECODING MULTIPLE TRANSFERT INSTRUCTION :
 
+    stm_i <= '0';
+    ldm_i <= '0';
 -------------------------------------------------------------------------------
 
 ---------------- MACHINE A ETAT------------------------------------------------
@@ -488,7 +490,7 @@ begin
 
 	T1_fetch <= not(dec2if_empty_signal) ; 			-- on peut charger de nouvelles instructions
 	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
-	T1_run <= if2dec_empty or not(dec2exe_empty_signal) or not(condv) ; -- 
+	T1_run <= if2dec_empty or not(dec2exe_empty_signal) or not(condv) ; -- quand fifo if2dec est vide ou que fifo exe pleine ou que predicat est faux
 	T2_run <= not(cond) ; 						-- condition annulée -> annulation instruction
 	T3_run <= cond and not(bl_i or b_i or stm_i or ldm_i); 							-- condition reussi et instruction tourne
 	T4_run <= bl_i and cond; 							-- branchement et link
@@ -502,9 +504,10 @@ begin
     next_state <=   FETCH   when (cur_state = FETCH and T1_fetch = '1') 
                             or    cur_state = MTRANS
                             or    cur_state = BRANCH else
+					
                     RUN     when (cur_state = FETCH and T2_fetch = '1')
-                            or   (cur_state = FETCH and (T1_run = '1' or T2_run = '1' or T3_run = '1')) else
-                    LINK    when (cur_state = RUN and T4_run = '1') else
+                            or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1')) else
+					LINK    when (cur_state = RUN and T4_run = '1') else
                     BRANCH  when (cur_state = RUN and T5_run = '1')
                             or    cur_state = LINK else
                     MTRANS  when (cur_state = RUN and T6_run = '1') else
@@ -516,10 +519,22 @@ begin
 			if(reset_n = '0') then
 				cur_state <= FETCH ;
 			else 
+                -- report "next_state : " & state_type'image(next_state);
+                -- report "cur_state : " & state_type'image(cur_state);
+                -- report "T1_run : " & std_logic'image(T1_run);
+                -- report "T2_run : " & std_logic'image(T2_run);
+                -- report "T3_run : " & std_logic'image(T3_run);
+                -- report "T4_run : " & std_logic'image(T4_run);
+                -- report "T5_run : " & std_logic'image(T5_run);
+                -- report "condv : " & std_logic'image(condv);
+                -- report "cond : " & std_logic'image(cond);
+                -- report "dec2exe_empty_signal : " & std_logic'image(dec2exe_empty_signal);
+
 				cur_state <= next_state ;
 			end if;
 		end if;
 	end process ;
+    dec2exe_empty_signal <= '1';
 ---------------------------------------------------------INSTRUCTION DECODING------------------------------------------------------------------------------------
 
 ---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
@@ -643,7 +658,8 @@ dec_mem_sb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and 
 dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and trans_t = '1' 
 					   else "0000" ;
 
-
+dec_mem_data <= rdata3_signal;
+dec_shift_ror <= '0';
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
 inc_pc_signal 		<= dec2if_push when cur_state = RUN else '0';
