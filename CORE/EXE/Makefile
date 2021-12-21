@@ -10,7 +10,7 @@ GHDL?=ghdl
 GHDLFLAGS?=--workdir=$(WORKDIR)
 GHDLRUNFLAGS?=
 TB=exec_tb
-COMPONENTS=exec alu fifo_72b ror shift_left shift_right shifter
+COMPONENTS=exec alu ror shift_left shift_right shifter
 MODS=$(COMPONENTS) $(TB)
 
 # Default target : elaborate
@@ -24,7 +24,7 @@ elab : analyse
 
 # Run target
 run : elab
-		$(GHDL) -c $(GHDLFLAGS) -r $(TB) $(GHDLRUNFLAGS)
+		./$(TB)
 
 # Targets to analyze libraries
 analyse: $(addsuffix .vhdl,$(MODS))

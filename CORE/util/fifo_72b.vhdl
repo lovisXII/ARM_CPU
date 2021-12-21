@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 ENTITY fifo_72b IS
 	PORT(
-		din		: in std_logic_vector(72 -1 downto 0);
-		dout		: out std_logic_vector(72 -1 downto 0);
+		din		: in std_logic_vector(71 downto 0);
+		dout		: out std_logic_vector(71 downto 0);
 
 		-- commands
 		push		: in std_logic;

@@ -5,16 +5,18 @@ GHDL?=ghdl
 GHDLFLAGS?=--workdir=$(WORKDIR)
 GHDLRUNFLAGS?=
 COMPONENTS=core IFETCH/ifetch MEM/mem
-MODS=$(COMPONENTS)
-
+TB=core_tb
+MODS=$(COMPONENTS) $(TB)
 # Default target : elaborate
 all : bind core.c
-	cd $(WORKDIR) && clang core.c -Wl,`ghdl --list-link exec_tb`
+	cd $(WORKDIR) && clang ../CORE/core.c -Wl,`ghdl --list-link core_tb`
 
-elab: 
-	ghdl -e $(GHDLFLAGS) arm_core
+elab: analyse
+	$(GHDL) -c $(GHDLFLAGS) -e core_tb
+
+
 bind: analyse
-	cd $(WORKDIR) && ghdl --bind exec_tb
+	cd $(WORKDIR) && ghdl --bind core_tb
 
 # Targets to analyze libraries
 analyse: $(addsuffix .vhdl,$(MODS))
@@ -23,4 +25,4 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.lst *.o
