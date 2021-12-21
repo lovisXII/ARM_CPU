@@ -115,7 +115,7 @@ BEGIN
     testproc: process(ck)
    begin
        interface(if_adr, if_adr_valid, mem_adr);
-       report std_logic'image(if_adr(0));
+       report std_logic'image(mem_adr(0));
    end process testproc;
      
 

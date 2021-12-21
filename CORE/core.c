@@ -1,4 +1,3 @@
-#include "stdbool.h"
 
 extern int ghdl_main (int argc, char **argv);
 
@@ -11,6 +10,6 @@ int main(int argc, char const *argv[])
 
 
 void interface(char* a, char b, char* c) {
-    a[0] = 2;
-    a[32] = 2;
+    c[0] = 2;
+    c[31] = 2;
 }

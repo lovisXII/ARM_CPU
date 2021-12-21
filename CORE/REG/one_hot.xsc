@@ -1,0 +1,91 @@
+N:adr 0:-1:0 ps
+N:adr 1:-1:0 ps
+N:adr 2:-1:0 ps
+N:adr 3:-1:0 ps
+N:adr_oh 0:-1:325 ps
+N:adr_oh 1:-1:325 ps
+N:adr_oh 2:-1:325 ps
+N:adr_oh 3:-1:325 ps
+N:adr_oh 4:-1:325 ps
+N:adr_oh 5:-1:325 ps
+N:adr_oh 6:-1:325 ps
+N:adr_oh 7:-1:325 ps
+N:adr_oh 8:-1:325 ps
+N:adr_oh 9:-1:325 ps
+N:adr_oh 10:-1:325 ps
+N:adr_oh 11:-1:325 ps
+N:adr_oh 12:-1:325 ps
+N:adr_oh 13:-1:325 ps
+N:adr_oh 14:-1:325 ps
+N:adr_oh 15:-1:325 ps
+N:en:-1:0 ps
+N:not_adr_3:-1:116 ps
+N:not_aux0:-1:116 ps
+N:not_aux1:-1:116 ps
+N:not_aux10:-1:116 ps
+N:not_aux11:-1:116 ps
+N:not_aux12:-1:116 ps
+N:not_aux13:-1:116 ps
+N:not_aux2:-1:116 ps
+N:not_aux3:-1:116 ps
+N:not_aux4:-1:116 ps
+N:not_aux5:-1:116 ps
+N:not_aux6:-1:116 ps
+N:not_aux7:-1:116 ps
+N:not_aux8:-1:116 ps
+N:not_aux9:-1:116 ps
+B:adr_oh_15:-1:325 ps
+B:adr_oh_14:-1:325 ps
+B:adr_oh_13:-1:325 ps
+B:adr_oh_12:-1:325 ps
+B:adr_oh_11:-1:325 ps
+B:adr_oh_10:-1:325 ps
+B:adr_oh_9:-1:325 ps
+B:adr_oh_8:-1:325 ps
+B:adr_oh_7:-1:325 ps
+B:adr_oh_6:-1:325 ps
+B:adr_oh_5:-1:325 ps
+B:adr_oh_4:-1:325 ps
+B:adr_oh_3:-1:325 ps
+B:adr_oh_2:-1:325 ps
+B:adr_oh_1:-1:325 ps
+B:adr_oh_0:32:325 ps
+B:not_adr_3:-1:116 ps
+B:not_aux0_ins:-1:358 ps
+B:not_aux1_ins:-1:465 ps
+B:not_aux12_ins:32:302 ps
+B:not_aux2_ins:-1:302 ps
+B:not_aux3_ins:-1:465 ps
+B:not_aux13_ins:-1:173 ps
+B:not_aux4_ins:-1:302 ps
+B:not_aux5_ins:-1:465 ps
+B:not_aux6_ins:-1:173 ps
+B:not_aux7_ins:-1:465 ps
+B:not_aux8_ins:-1:474 ps
+B:not_aux9_ins:-1:474 ps
+B:not_aux10_ins:-1:474 ps
+B:not_aux11_ins:-1:474 ps
+C:adr_oh 0:32:325 ps
+C:adr_oh 1:-1:325 ps
+C:adr_oh 2:-1:325 ps
+C:adr_oh 3:-1:325 ps
+C:adr_oh 4:-1:325 ps
+C:adr_oh 5:-1:325 ps
+C:adr_oh 6:-1:325 ps
+C:adr_oh 7:-1:325 ps
+C:adr_oh 8:-1:325 ps
+C:adr_oh 9:-1:325 ps
+C:adr_oh 10:-1:325 ps
+C:adr_oh 11:-1:325 ps
+C:adr_oh 12:-1:325 ps
+C:adr_oh 13:-1:325 ps
+C:adr_oh 14:-1:325 ps
+C:adr_oh 15:-1:325 ps
+C:en:-1:0 ps
+C:adr 0:-1:0 ps
+C:adr 1:32:0 ps
+C:adr 2:-1:0 ps
+C:adr 3:-1:0 ps
+P:adr_1:adr_1:not_aux12_ins:32:474 ps
+P:not_aux12_ins:not_aux12:adr_oh_0:32:474 ps
+P:adr_oh_0:adr_oh 0:adr_oh_0:32:474 ps
