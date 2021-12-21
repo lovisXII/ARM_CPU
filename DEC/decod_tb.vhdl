@@ -249,15 +249,6 @@ decod0 : decod port map
 	    WAIT FOR 4 ns;
   	end process;
 
-
-  	reset: process
-	begin
-		reset_n <= '0';
-		wait for 4 ns;
-		reset_n <= '1';
-		wait;
-	end process;
-
 	  	tes_tb_process : PROCESS(ck)
 
 	  variable seed1, seed2 : integer := 999;
