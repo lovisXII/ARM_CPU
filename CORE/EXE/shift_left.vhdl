@@ -7,8 +7,8 @@ entity shift_left is
 			shift_value : in std_logic_vector(4 downto 0);
 			dout : out std_logic_vector(31 downto 0);
 			carry_out : out std_logic;
-			vdd       : IN bit;
-    		vss       : IN bit 
+			vdd       : IN Std_Logic;
+    		vss       : IN Std_Logic 
     	);
 end shift_left ;
 

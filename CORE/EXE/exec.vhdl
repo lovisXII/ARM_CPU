@@ -70,8 +70,8 @@ entity EXEC is
 	-- global interface
 			ck					: in Std_logic;
 			reset_n			: in Std_logic;
-			vdd				: in bit;
-			vss				: in bit);
+			vdd				: in Std_Logic;
+			vss				: in Std_Logic);
 end EXEC;
 
 ----------------------------------------------------------------------
@@ -105,8 +105,8 @@ component alu
            n			: out Std_Logic;
            v			: out Std_Logic;
 			  
-			  vdd			: in bit;
-			  vss			: in bit);
+			  vdd			: in Std_Logic;
+			  vss			: in Std_Logic);
 end component;
 
 component Shifter
@@ -122,8 +122,8 @@ component Shifter
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic;
     -- global interface
-    vdd       : IN  bit;
-    vss       : IN  bit );
+    vdd       : IN  Std_Logic;
+    vss       : IN  Std_Logic );
 END component;
 
 component fifo_72b
@@ -141,8 +141,8 @@ component fifo_72b
 
 		reset_n	: in std_logic;
 		ck			: in std_logic;
-		vdd		: in bit;
-		vss		: in bit
+		vdd		: in Std_Logic;
+		vss		: in Std_Logic
 	);
 end component;
 

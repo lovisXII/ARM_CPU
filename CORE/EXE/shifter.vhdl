@@ -33,8 +33,8 @@ ARCHITECTURE behavior OF Shifter IS
     shift_value :       in std_logic_vector(4 downto 0);
     dout :              out std_logic_vector(31 downto 0);
     carry_out :         out std_logic ;
-    vdd       : IN  bit;
-    vss       : IN  bit 
+    vdd       : IN  Std_Logic;
+    vss       : IN  Std_Logic 
     );
     
     end component ;
@@ -45,8 +45,8 @@ ARCHITECTURE behavior OF Shifter IS
     shift_val : IN  Std_Logic_Vector(4 downto 0);--valeur du shift du 5 bit
     din       : IN  Std_Logic_Vector(31 downto 0); --valeur d'entrée 
     cin       : IN  Std_Logic;
-    vdd       : in bit ;
-    vss       : in bit ;
+    vdd       : in Std_Logic ;
+    vss       : in Std_Logic ;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic
     );    
@@ -59,8 +59,8 @@ ARCHITECTURE behavior OF Shifter IS
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); 
     cout      : OUT Std_Logic ;
-    vdd       : IN  bit;
-    vss       : IN  bit );
+    vdd       : IN  Std_Logic;
+    vss       : IN  Std_Logic );
     end component ;
 
 BEGIN
@@ -113,7 +113,7 @@ shifter_process_1 :PROCESS(out_shift_ror,out_shift_left,out_shift_right, shift_l
             dout <= out_shift_ror ;
             cout <= carry_out_ror ;
     ELSE
-            dout <= X"0000000";
+            dout <= X"00000000";
             cout <= '0';
     END IF ;
 END PROCESS shifter_process_1 ;

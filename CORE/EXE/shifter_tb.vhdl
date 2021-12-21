@@ -16,7 +16,7 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
   SIGNAL shift_lsl,shift_lsr,shift_asr,shift_ror,shift_rrx,cin,cout : std_logic ;
   SIGNAL din,dout : std_logic_vector(31 downto 0) ;
   SIGNAL shift_val : std_logic_vector(4 downto 0) ;
-  SIGNAL vdd, vss : bit ;
+  SIGNAL vdd, vss : Std_Logic ;
 
   COMPONENT shifter IS
     PORT(
@@ -31,8 +31,8 @@ ARCHITECTURE BEHAVIOR OF shifter_tb IS
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic;
     -- global interface
-    vdd       : IN  bit;
-    vss       : IN  bit );
+    vdd       : IN  Std_Logic;
+    vss       : IN  Std_Logic );
   END COMPONENT ;
 
   BEGIN 

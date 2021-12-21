@@ -12,8 +12,8 @@ ENTITY ror_entity IS
     cin       : IN  Std_Logic;
     dout      : OUT Std_Logic_Vector(31 downto 0); -- valeur de sortie
     cout      : OUT Std_Logic;
-    vdd       : IN bit ;
-    vss       : IN bit);
+    vdd       : IN Std_Logic ;
+    vss       : IN Std_Logic);
     -- global interface	
 END ror_entity;
 
