@@ -3,33 +3,36 @@
 # Command used to generate this makefile:
 # ghdl --gen-makefile reg_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
-export MBK_TARGET_LIB=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
-GHDL=ghdl
-GHDLFLAGS=
-GHDLRUNFLAGS=
+ 
+WORKDIR?=../../work
 
+MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
+GHDL?=ghdl
+GHDLFLAGS?=--workdir=$(WORKDIR)
+GHDLRUNFLAGS?=
+TB=reg_tb
+COMPONENTS=one_hot reg
+MODS=$(COMPONENTS) $(TB)
 
 # Default target : elaborate
 all : elab
 
 # Elaborate target.
 elab : analyse
-		$(GHDL) -c $(GHDLFLAGS) -e reg_tb
+		$(GHDL) -c $(GHDLFLAGS) -e $(TB)
 
 .PHONY: run clean
 
 # Run target
-run :
-		$(GHDL) -c $(GHDLFLAGS) -r reg_tb $(GHDLRUNFLAGS)
+run : elab
+		$(GHDL) -c $(GHDLFLAGS) -r $(TB) $(GHDLRUNFLAGS)
 
 # Targets to analyze libraries
-analyse: reg.vhdl reg_tb.vhdl one_hot.vhdl
-		$(GHDL) -a $(GHDLFLAGS) reg.vhdl
-		$(GHDL) -a $(GHDLFLAGS) reg_tb.vhdl
-		$(GHDL) -a $(GHDLFLAGS) one_hot.vhdl
+analyse: $(addsuffix .vhdl,$(MODS))
+		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f *.cf *.vst *.vbe *.xsc *.vcd reg reg_tb
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
 
 synth: one_hot.vst reg_model.vst
 

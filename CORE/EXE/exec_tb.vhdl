@@ -12,7 +12,7 @@ ENTITY exec_tb IS
 END ENTITY ;
 
 ARCHITECTURE BEHAVIOR OF exec_tb IS
-component EXE
+component EXEC
   port(
   -- Decode interface synchro
       dec2exe_empty : in Std_logic;
@@ -145,7 +145,7 @@ end component;
 
   BEGIN 
 
-  exe_stage : EXE port map(
+  exe_stage : EXEC port map(
      dec2exe_empty => dec2exe_empty,
      exe_pop => exe_pop,
 

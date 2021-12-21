@@ -3,39 +3,35 @@
 # Command used to generate this makefile:
 # ghdl --gen-makefile exec_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
-export MBK_TARGET_LIB=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
-GHDL=ghdl
-GHDLFLAGS=
-GHDLRUNFLAGS=
+WORKDIR?=../../work
 
+MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
+GHDL?=ghdl
+GHDLFLAGS?=--workdir=$(WORKDIR)
+GHDLRUNFLAGS?=
+TB=exec_tb
+COMPONENTS=exec alu fifo_72b ror shift_left shift_right shifter
+MODS=$(COMPONENTS) $(TB)
 
 # Default target : elaborate
 all : elab
 
 # Elaborate target.
 elab : analyse
-		$(GHDL) -c $(GHDLFLAGS) -e exec_tb
+		$(GHDL) -c $(GHDLFLAGS) -e $(TB)
 
 .PHONY: run clean
 
 # Run target
-run :
-		$(GHDL) -c $(GHDLFLAGS) -r exec_tb $(GHDLRUNFLAGS)
+run : elab
+		$(GHDL) -c $(GHDLFLAGS) -r $(TB) $(GHDLRUNFLAGS)
 
 # Targets to analyze libraries
-analyse: exec_tb.vhdl exec.vhdl shifter.vhdl alu.vhdl multiplexer.vhdl shift_left.vhdl shift_right.vhdl ror.vhdl multiplexer.vhdl fifo_72b.vhdl
-		$(GHDL) -a $(GHDLFLAGS) exec_tb.vhdl
-		$(GHDL) -a $(GHDLFLAGS) exec.vhdl
-		$(GHDL) -a $(GHDLFLAGS) shifter.vhdl
-		$(GHDL) -a $(GHDLFLAGS) shift_left.vhdl
-		$(GHDL) -a $(GHDLFLAGS) shift_right.vhdl
-		$(GHDL) -a $(GHDLFLAGS) ror.vhdl
-		$(GHDL) -a $(GHDLFLAGS) multiplexer.vhdl
-		$(GHDL) -a $(GHDLFLAGS) fifo_72b.vhdl
-		$(GHDL) -a $(GHDLFLAGS) alu.vhdl
+analyse: $(addsuffix .vhdl,$(MODS))
+		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f *.cf *.vst *.vbe *.xsc
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
 
 synth: exec_model.vst
 

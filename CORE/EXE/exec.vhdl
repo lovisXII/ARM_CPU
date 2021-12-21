@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity EXE is
+entity EXEC is
 	port(
 	-- Decode interface synchro
 			dec2exe_empty	: in Std_logic;
@@ -72,11 +72,11 @@ entity EXE is
 			reset_n			: in Std_logic;
 			vdd				: in bit;
 			vss				: in bit);
-end EXE;
+end EXEC;
 
 ----------------------------------------------------------------------
 
-architecture Behavior OF EXE is
+architecture Behavior OF EXEC is
 
 signal res_shift : std_logic_vector(31 downto 0);
 signal not_res_shift : std_logic_vector(31 downto 0);
