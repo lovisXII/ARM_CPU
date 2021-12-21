@@ -57,6 +57,26 @@ Component IFetch
 			vss				: in bit);
 end Component;
 
+Component fifo_129b
+	PORT(
+		din		: in std_logic_vector(128 downto 0);
+		dout		: out std_logic_vector(128 downto 0);
+
+		-- commands
+		push		: in std_logic;
+		pop		: in std_logic;
+
+		-- flags
+		full		: out std_logic;
+		empty		: out std_logic;
+
+		reset_n	: in std_logic;
+		ck			: in std_logic;
+		vdd		: in bit;
+		vss		: in bit
+	);
+end component ;
+
 Component Decod
 	port(
 	-- Exec  operands
@@ -93,9 +113,13 @@ Component Decod
 	-- Exec Synchro
 			dec2exe_empty	: out Std_Logic;
 			exe_pop			: in Std_logic;
+			dec2exe_push 	: out std_logic ;
 
 	-- Alu command
-			dec_alu_cmd		: out Std_Logic_Vector(1 downto 0);
+			dec_alu_add		: out Std_Logic;
+			dec_alu_and		: out Std_Logic;
+			dec_alu_or		: out Std_Logic;
+			dec_alu_xor		: out Std_Logic;
 
 	-- Exe Write Back to reg
 			exe_res			: in Std_Logic_Vector(31 downto 0);
@@ -273,6 +297,11 @@ Signal dec2if_empty	: Std_Logic;
 Signal dec_pop			: Std_Logic;
 
 Signal exe_pop			: Std_logic;
+Signal dec2exe_push 	: Std_Logic ;
+Signal dec_alu_add 	 	: Std_Logic ;
+Signal dec_alu_and 	 	: Std_Logic ;
+Signal dec_alu_or 	 	: Std_Logic ;
+Signal dec_alu_xor 	 	: Std_Logic ;
 Signal exe_res			: Std_Logic_Vector(31 downto 0);
 Signal exe_c			: Std_Logic;
 Signal exe_v			: Std_Logic;
@@ -295,6 +324,9 @@ Signal mem_res			: Std_Logic_Vector(31 downto 0);
 Signal mem_dest		: Std_Logic_Vector(3 downto 0);
 Signal mem_wb			: Std_Logic;
 
+
+Signal output_fifo_129b : Std_Logic_Vector(128 downto 0) ;
+
 begin
 
 	ifetch_i : ifetch
@@ -304,7 +336,7 @@ begin
 					if_adr_valid	=> if_adr_valid,
       
 					ic_inst			=> ic_inst,
-					ic_stall			=> ic_stall,
+					ic_stall		=> ic_stall,
 
 					dec2if_empty	=> dec2if_empty,
 					if_pop			=> if_pop,
@@ -355,9 +387,13 @@ begin
 	-- Exec Synchro
 					dec2exe_empty	=> dec2exe_empty,
 					exe_pop			=> exe_pop,
+					dec2exe_push	=> dec2exe_push ,
 
 	-- Alu command
-					dec_alu_cmd		=> dec_alu_cmd,
+					dec_alu_add => dec_alu_add ,
+					dec_alu_and => dec_alu_and ,
+					dec_alu_or => dec_alu_or ,
+					dec_alu_xor => dec_alu_xor ,
 
 	-- Exe Write Back to reg
 					exe_res			=> exe_res,
@@ -393,6 +429,29 @@ begin
 					vdd	 			=> vdd,
 					vss	 			=> vss);
 
+	dec2exe : fifo_129b 
+	port map(
+		din <= dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_flag_wb 	&
+			   dec_mem_data 	& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
+			   dec_shift_lsl 	& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
+			   dec_cy 			& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy 	& dec_alu_cy 	& dec_alu_add 	& dec_alu_and  	&
+			   dec_alu_add 		& dec_alu_or 	& dec_alu_xor ,	
+
+		dout <= output_fifo_129b ,		
+
+		-- commands
+		push <=	dec2exe_push ,
+		pop	<= exe_pop ,	
+
+		-- flags
+		full <= not(dec2exe_empty) ,
+		empty <= dec2exe_empty ,
+
+		reset_n	<= reset_n ,
+		ck		<= ck ,
+		vdd		<= vdd ,
+		vss	<= vss	
+	);
 	exec_i : exec
 	port map (
 	-- Decode interface synchro

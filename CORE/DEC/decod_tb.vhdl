@@ -42,6 +42,7 @@ signal dec_alu_cy 		:  Std_Logic;
 	-- Exec Synchro
 signal dec2exe_empty	:  Std_Logic; --fifo en entree dec/exe
 signal exe_pop			:  Std_logic;
+signal dec2exe_push 	:  std_logic ;
 
 	-- Alu command
 signal dec_alu_add		:  Std_Logic;
@@ -118,6 +119,7 @@ component decod is
 
 	-- Exec Synchro
 			dec2exe_empty	: out Std_Logic; --fifo en entree dec/exe
+			dec2exe_push 	: out std_logic ;
 			exe_pop			: in Std_logic;
 
 	-- Alu command
@@ -199,6 +201,7 @@ decod0 : decod port map
 	-- Exec Synchro
 			dec2exe_empty => dec2exe_empty,
 			exe_pop => exe_pop,
+			dec2exe_push => dec2exe_push ;
 
 	-- Alu command
 			dec_alu_add => dec_alu_add,

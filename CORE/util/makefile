@@ -10,7 +10,7 @@ MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib
 GHDL?=ghdl
 GHDLFLAGS?=--workdir=$(WORKDIR)
 GHDLRUNFLAGS?=
-COMPONENTS=fifo_72b fifo_32b 
+COMPONENTS=fifo_72b fifo_32b fifo_129b
 MODS=$(COMPONENTS)
 
 # Default target : elaborate

@@ -40,6 +40,7 @@ entity Decod is
 	-- Exec Synchro
 			dec2exe_empty	: out Std_Logic; --fifo en entree dec/exe
 			exe_pop			: in Std_logic;
+			dec2exe_push 	: out std_logic ;
 
 	-- Alu command
 			dec_alu_add		: out Std_Logic;
@@ -298,8 +299,6 @@ signal inval_ovr_signal			: Std_Logic;
  signal dec2if_push   : std_logic;
  signal inc_pc_signal : std_logic ;
 
--- Gestion de EXE
-signal dec2exe_push : std_logic;
 
 -- Flags des accès mémoire
 
@@ -409,6 +408,8 @@ begin
 	vdd => vdd ,
 	vss => vss
 	);
+
+
 -- Execution condition
 --ATTENTION GESTION DE L'OVERFLOW EN CAS DE COMPARAISON
 
