@@ -595,8 +595,8 @@ dec_shift_lsr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1'
 					    else '0' ;
 dec_shift_asr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "10" 
 						else '0' ;
-dec_shift_ror 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11"  
-				 			and cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) 
+dec_shift_ror 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11" else 
+				 	   '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) 
                         else '0';
 
 dec_shift_rrx 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11" and if_ir(11 downto 7) = "00001" else '0' ;

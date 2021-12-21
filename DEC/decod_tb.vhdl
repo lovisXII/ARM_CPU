@@ -298,7 +298,7 @@ decod0 : decod port map
         elsif (counter = 3) then
         reset_n <= '1';
         -- adds r0, r0, 127
-        if_ir   <= "11100010100100000000000001111111";
+        if_ir   <= X"e08111e2"; 
 
         exe_pop <= '0';
         exe_res	<= X"00000000";
