@@ -39,4 +39,4 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+		rm -f *.cf
