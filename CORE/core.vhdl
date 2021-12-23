@@ -342,6 +342,7 @@ dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else
 							"01" when dec2exe_output(2)		= '1' else
 							"10" when dec2exe_output(1) 	= '1' else
 							"11" when dec2exe_output(0) 	= '1' ;
+dec2exe_full 		  <= 	not(dec2exe_empty) ;
 	ifetch_i : ifetch
 	port map (
 	-- Icache interface
