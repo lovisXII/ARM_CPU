@@ -3,12 +3,12 @@ USE IEEE.STD_LOGIC_1164.ALL ;
 USE IEEE.numeric_std.ALL ;
 use ieee.math_real.all;
 
-
+--revoir les gestions des @ decriture et des opérandes 
 entity test_decode_exe is
 	port(
 		dec_pc 	: out 	std_logic_vector(31 downto 0);
 		if_ir 		: in 	std_logic_vector(31 downto 0);
-		exe_res : in std_logic_vector(31 downto 0) ;
+		exe_res : in std_logic_vector(31 downto 0) ; -- a tej fait nimp
 		exe_result  : out 	std_logic_vector(31 downto 0);
 		exe_c_result	: out 	Std_Logic ;
 		exe_v_result	: out 	Std_Logic ;
