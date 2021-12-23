@@ -3,7 +3,7 @@
 # Command used to generate this makefile:
 # ghdl --gen-makefile exec_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
-WORKDIR=.
+WORKDIR=../../work
 
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL?=ghdl
@@ -28,7 +28,7 @@ elab : analyse
 
 # Run target
 run : elab
-		$(GHDL) -c $(GHDLFLAGS) -r $(TB) $(GHDLRUNFLAGS)
+		./$(TB)
 
 # Targets to analyze libraries
 analyse: $(addsuffix .vhdl,$(MODS))
@@ -39,4 +39,5 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f *.cf *.o
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.lst *.o
+		rm -f *.o *.cf

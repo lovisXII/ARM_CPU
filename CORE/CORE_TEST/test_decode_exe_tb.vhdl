@@ -12,6 +12,7 @@ component test_decode_exe
 	port(
 		dec_pc 	: out 	std_logic_vector(31 downto 0);
 		if_ir 	: in 	std_logic_vector(31 downto 0);
+		exe_res : in std_logic_vector(31 downto 0) ;
 		exe_result : out 	std_logic_vector(31 downto 0);
 		exe_c_result	: out 	Std_Logic ;
 		exe_v_result	: out 	Std_Logic ;
@@ -26,6 +27,7 @@ end component ;
 
 signal dec_pc :  	std_logic_vector(31 downto 0);
 signal if_ir :  	std_logic_vector(31 downto 0);
+signal exe_res : 		std_logic_vector(31 downto 0) ;
 signal exe_result :  	std_logic_vector(31 downto 0);
 signal exe_c_result :  	Std_Logic ;
 signal exe_v_result :  	Std_Logic ;
@@ -41,6 +43,7 @@ begin
 core1 : test_decode_exe port map(
  dec_pc => dec_pc ,
  if_ir => if_ir ,
+ exe_res => exe_res ,
  exe_result => exe_result ,
  exe_c_result => exe_c_result ,
  exe_v_result => exe_v_result ,
@@ -55,7 +58,7 @@ core1 : test_decode_exe port map(
 	reset : process 
 	begin
 		reset_n <= '0' ;
-		wait for 12 ns ;
+		wait for 20 ns ;
 		reset_n <= '1' ;
 		wait ;
 	end process ; 
@@ -100,12 +103,13 @@ core1 : test_decode_exe port map(
 
 	begin
 		if(rising_edge(ck)) then
-		dec_pc <= X"00000000" ;
-		if_ir  <= "11100010100000000001000000000001" ; -- add r0,r1,1 ;
+		if_ir  <= "11100010000000010011000000000001" ; 
+		exe_res <= "00000000000000000000000000000000" ;		
 		end if;
-		report"__________________________________________________";
+		report"______________________test bench____________________________";
 		report " dec_pc : " 	&to_string(dec_pc) ;
 		report "if_ir : " 		&to_string(if_ir) ;
+		report "exe_result : "	 	&to_string(exe_result) ;
 		report " exe_res : " 	&to_string(exe_result) ;
 		report "exe_c : "  		&std_logic'image(exe_c_result)(2) ;
 		report "exe_n : "  		&std_logic'image(exe_n_result)(2) ;

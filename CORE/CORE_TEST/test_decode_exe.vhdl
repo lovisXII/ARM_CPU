@@ -1,10 +1,14 @@
-library ieee ;
-use ieee.std_logic_1164.all ;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL ;
+USE IEEE.numeric_std.ALL ;
+use ieee.math_real.all;
+
 
 entity test_decode_exe is
 	port(
 		dec_pc 	: out 	std_logic_vector(31 downto 0);
 		if_ir 		: in 	std_logic_vector(31 downto 0);
+		exe_res : in std_logic_vector(31 downto 0) ;
 		exe_result  : out 	std_logic_vector(31 downto 0);
 		exe_c_result	: out 	Std_Logic ;
 		exe_v_result	: out 	Std_Logic ;
@@ -99,10 +103,10 @@ Component Decod
 end Component;
 
 
-Component fifo_125b
+Component fifo_129b
 	PORT(
-		din				: in  std_logic_vector(124 downto 0);
-		dout			: out std_logic_vector(124 downto 0);
+		din				: in  std_logic_vector(128 downto 0);
+		dout			: out std_logic_vector(128 downto 0);
 
 		-- commands
 		push			: in std_logic;
@@ -234,7 +238,7 @@ signal dec_alu_xor : Std_Logic;
 
 	-- Exe Write Back to reg
 
-signal exe_res : std_logic_vector(31 downto 0) ;
+
 signal exe_c : Std_Logic ;
 signal exe_n : Std_Logic ;
 signal exe_v : Std_Logic ;
@@ -260,9 +264,6 @@ signal mem_wb : Std_Logic;
 signal dec2exe_empty : Std_logic;
 
 
-	-- Alu command
-signal dec_alu_cmd : Std_Logic_Vector(1 downto 0); 
-
 	-- Mem interface
 signal exe_mem_adr 		: Std_Logic_Vector(31 downto 0); 
 signal exe_mem_data 	: Std_Logic_Vector(31 downto 0); 
@@ -277,9 +278,9 @@ signal mem_pop 			: Std_logic;
 
 
 -- Internal signal
-signal dec2exe_input : std_logic_vector(124 downto 0) ;
+signal dec2exe_input : std_logic_vector(128 downto 0) ;
 signal dec_alu_cmd_signal : std_logic_vector(1 downto 0) ;
-signal dec2exe_output : std_logic_vector(124 downto 0) ;
+signal dec2exe_output : std_logic_vector(128 downto 0) ;  
 Signal dec2exe_full  	 	: Std_Logic ; 
 
 
@@ -292,10 +293,10 @@ dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_
 					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy  	&
 					   		dec_alu_add 		& dec_alu_and  	& dec_alu_or 	& dec_alu_xor ;
 
-dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else
-							"01" when dec2exe_output(2)		= '1' else
-							"10" when dec2exe_output(1) 	= '1' else
-							"11" when dec2exe_output(0) 	= '1' ;
+dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else -- add
+							"01" when dec2exe_output(2)		= '1' else -- or
+							"10" when dec2exe_output(1) 	= '1' else -- and
+							"11" when dec2exe_output(0) 	= '1' ; -- xor
 
 decod_i : decod
 	port map (
@@ -332,7 +333,7 @@ decod_i : decod
 
 	-- Exec Synchro
 					dec2exe_empty	=> dec2exe_empty,
-					exe_pop			=> exe_pop,
+					exe_pop			=> '1',
 					dec2exe_push	=> dec2exe_push ,
 
 	-- Alu command
@@ -359,9 +360,9 @@ decod_i : decod
 
 	-- Ifetch synchro
 					dec2if_empty	=> dec2if_empty,
-					if_pop			=> if_pop,
+					if_pop			=> '1',
 
-					if2dec_empty	=> if2dec_empty,
+					if2dec_empty	=> '0',
 					dec_pop			=> dec_pop,
 
 	-- Mem Write back to reg
@@ -375,15 +376,15 @@ decod_i : decod
 					vdd	 			=> vdd,
 					vss	 			=> vss);
 
-	dec2exe : fifo_125b 
+	dec2exe : fifo_129b 
 	port map(
 		din 	=> 	dec2exe_input ,	
 
 		dout 	=> dec2exe_output ,		
 
 		-- commands
-		push 	=>	dec2exe_push ,
-		pop		=> exe_pop ,	
+		push 	=>	'1' ,
+		pop		=> '1' ,	
 
 		-- flags
 		full 	=> dec2exe_full ,
@@ -457,11 +458,69 @@ decod_i : decod
 					exe_mem_sb		=> exe_mem_sb,
 
 					exe2mem_empty	=> exe2mem_empty,
-					mem_pop			=> mem_pop,
+					mem_pop			=> '1',
 
 	-- global interface
 					reset_n			=> reset_n,
 					ck		 		=> ck,
 					vdd	 			=> vdd,
 					vss	 			=> vss);
+
+process(ck)
+
+
+	variable seed1, seed2 : integer := 999;
+
+  	impure FUNCTION rand_slv(len : integer) return std_logic_vector is
+	        variable r : real;
+	        variable slv : std_logic_vector(len - 1 downto 0);
+	        BEGIN
+	          for i in slv'range loop
+	              uniform(seed1, seed2, r);
+	            IF r > 0.5 THEN
+	              slv(i) := '1';
+	            ELSE
+	              slv(i) := '0';
+	            END IF;
+	          end loop;
+	        return slv;
+	      END FUNCTION;
+
+	  function to_string ( a: std_logic_vector) return string is
+	      variable b : string (1 to a'length) := (others => NUL);
+	      variable stri : integer := 1; 
+	    begin
+	      for i in a'range loop
+	          b(stri) := std_logic'image(a((i)))(2);  
+	      stri := stri+1;
+	      end loop;
+	    return b;
+	    end function; 
+begin
+report " -------------------fichier--------------------------------------- " ;
+report "-----------------fifo gestion :------------------------------------" ;
+report "dec2exe_output : " &to_string(dec2exe_output) ;
+
+report "-----------------decode gestion :-----------------------------------" ;
+report "if_ir : " &to_string(if_ir) ;
+report "dec_op1 :" &to_string(dec_op1) ;
+report "dec_op2 :" &to_string(dec_op2) ;
+report "dec_exe_dest :" &to_string(dec_exe_dest) ;
+report "dec_shift_lsl :" &Std_Logic'image(dec_shift_lsl)(2) ;
+report "dec_shift_lsr :" &Std_Logic'image(dec_shift_lsr)(2) ;
+report "dec_shift_asr :" &Std_Logic'image(dec_shift_asr)(2) ;
+report "dec_shift_ror :" &Std_Logic'image(dec_shift_ror)(2) ;
+report "dec_shift_rrx :" &Std_Logic'image(dec_shift_rrx)(2) ;
+report "alu cmd add :" &std_logic'image(dec2exe_output(3))(2);
+report "alu cmd or :" &std_logic'image(dec2exe_output(2))(2);
+report "alu cmd and  :" &std_logic'image(dec2exe_output(1))(2);
+report "alu cmd xor :" &std_logic'image(dec2exe_output(0))(2);
+report "-----------------exe gestion :-------------------------------------" ;
+
+report "dec_op1 entrance exec :" &to_string(dec2exe_output(128 downto 97)) ;
+report "dec_op2 entrance exec :" &to_string(dec2exe_output(96 downto 65 )) ;
+report "dec_alu_cmd : " &to_string(dec_alu_cmd_signal) ;
+report "dec_shift_val :" &to_string(dec_shift_val) ;
+
+end process ;
 end architecture ;
