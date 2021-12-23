@@ -39,4 +39,4 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f *.cf
+		rm -f *.cf *.o
