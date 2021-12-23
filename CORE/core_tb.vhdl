@@ -111,7 +111,7 @@ BEGIN
    
    
     testproc: process(ck)
-        variable inst: Std_Logic_Vector(31 downto 0);
+        variable inst: Std_Logic_Vector(31 downto 0); -- instruction send to the cpu
    begin
        inst := std_logic_vector(to_signed(get_inst(to_integer(signed(if_adr))), 32));
        report std_logic'image(inst(0));
