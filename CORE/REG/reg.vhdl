@@ -350,7 +350,7 @@ architecture Behavior OF Reg is
                     bits_valid <= valid_var;
                     czn_valid <= czn_valid_var;
                     ovr_valid <= ovr_valid_var;
-                    if inc_pc = '0' then 
+                    if inc_pc = '1' then 
                         pc_int := to_integer(unsigned(regs(15)));
                         pc_int := pc_int + 4;
                         regs(15) <= std_logic_vector(to_unsigned(pc_int, 32));

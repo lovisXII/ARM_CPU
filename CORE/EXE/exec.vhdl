@@ -153,13 +153,14 @@ exe_push 	<= NOT(dec2exe_empty) AND NOT(exe2mem_full);
 exe_res 	<= res_alu; 
 exe_c 		<= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
 
-alu_in_op2 	<= res_shift 	when dec_comp_op2 	= '1' else not(res_shift);
-alu_in_op1 	<= dec_op1 		when dec_comp_op1 	= '1' else not(dec_op1);
+alu_in_op2 	<= res_shift 	when dec_comp_op2 	= '0' else not(res_shift);
+alu_in_op1 	<= dec_op1 		when dec_comp_op1 	= '0' else not(dec_op1);
 mem_adr 	<= dec_op1 		when dec_pre_index 	= '1' else res_alu;
 
 exe_dest 	<= dec_exe_dest;
-exe_wb 		<= dec_exe_wb;
-exe_flag_wb <= dec_flag_wb; 
+-- don't write back when no operation is done
+exe_wb 		<= dec_exe_wb and NOT(dec2exe_empty) AND NOT(exe2mem_full);
+exe_flag_wb <= dec_flag_wb and NOT(dec2exe_empty) AND NOT(exe2mem_full); 
 --  Component instantiation.
 
   	shifter_inst : shifter port map(
@@ -220,5 +221,34 @@ exe_flag_wb <= dec_flag_wb;
 					vdd		 => vdd,
 					vss		 => vss);
 
+
+    proc_name: process(ck)
+        function to_string ( a: std_logic_vector) return string is
+            variable b : string (1 to a'length) := (others => NUL);
+            variable stri : integer := 1; 
+            begin
+            for i in a'range loop
+                b(stri) := std_logic'image(a((i)))(2);  
+            stri := stri+1;
+            end loop;
+            return b;
+            end function;
+        
+            function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
+                variable b : string (1 to 1) := (others => NUL);
+            begin
+                b(1) := std_logic'image(a)(2);  
+            return b;
+            end function;
+        begin
+            if (rising_edge(ck)) then
+                report "---------------EXEC--------------------";
+                report "res_alu : " & to_string(res_alu);
+                report "alu_in_op1 : " & to_string(alu_in_op1);
+                report "alu_in_op2 : " & to_string(alu_in_op2);
+                report "dec_alu_cmd : " & to_string(dec_alu_cmd);
+                report "dec_cy : " & to_string(dec_cy);
+            end if;
+        end process proc_name;
 
 end Behavior;

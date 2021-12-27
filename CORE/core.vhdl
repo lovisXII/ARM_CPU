@@ -339,10 +339,10 @@ dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_
 					   		dec_shift_lsl 		& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
 					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy & dec_alu_cmd_signal;
 
-dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else
-							"01" when dec2exe_output(2)		= '1' else
-							"10" when dec2exe_output(1) 	= '1' else
-							"11" when dec2exe_output(0) 	= '1' ;
+dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
+							"01" when dec_alu_and	= '1' else
+							"10" when dec_alu_or 	= '1' else
+							"11" when dec_alu_xor 	= '1' ;
 dec2exe_full 		  <= 	not(dec2exe_empty) ;
 	ifetch_i : ifetch
 	port map (
@@ -595,8 +595,12 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
         return b;
         end function;
    begin
+    if (rising_edge(ck)) then
+        report "---------------CORE--------------------";
        report "dec_pc : " & to_string(dec_pc);
        report "reset_n : " & to_string(reset_n);
+       report "dec_alu_cmd_signal : " & to_string(dec_alu_cmd_signal);
+    end if;
    end process proc_name;
 
 end;
