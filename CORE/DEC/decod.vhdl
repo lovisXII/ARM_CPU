@@ -177,6 +177,7 @@ component fifo_32b -- on ne peut pas utiliser de fifo generic car c'est pas synt
 end component;
 
 signal dec2if_empty_signal : std_logic;
+signal dec2if_full_signal : std_logic;
 signal dec2exe_empty_signal : std_logic;
 signal if_pop_signal : std_logic;
 
@@ -304,9 +305,6 @@ signal inval_ovr_signal			: Std_Logic;
 
 signal dec_mem_up_down : std_logic ;
 
--- Fifo gestion :
-
-signal dec2if_full : std_logic ;
 
 -- DECOD FSM
 
@@ -400,8 +398,8 @@ begin
 	pop => if_pop ,
 
 	-- flags
-	full => dec2if_full ,
-	empty => dec2if_empty ,
+	full => dec2if_full_signal ,
+	empty => dec2if_empty_signal ,
 
 	reset_n => reset_n ,
 	ck => ck ,
@@ -509,7 +507,7 @@ begin
 
 --Gestion des transitions :
 
-	T1_fetch <= not(dec2if_empty_signal) ; 			-- on peut charger de nouvelles instructions
+	T1_fetch <= not(dec2if_empty_signal) and if2dec_empty ; 			-- on peut charger de nouvelles instructions
 	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
 	T1_run <= if2dec_empty or not(dec2exe_empty_signal) or not(condv) ; -- quand fifo if2dec est vide ou que fifo exe pleine ou que predicat est faux
 	T2_run <= not(cond) ; 						-- condition annulée -> annulation instruction
@@ -575,7 +573,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 ---------------------------------------------------------FIFO GESTION--------------------------------------------------------------------------------------------
 
 dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T4_run or T5_run) = '1') else 
-                 		not(dec2if_empty_signal);
+                 		not(dec2if_full_signal);
 
 if_pop_signal 		<= '1'	when cur_state = FETCH  or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1' or T6_run = '1')) 
                     	else '0';
@@ -583,8 +581,7 @@ if_pop_signal 		<= '1'	when cur_state = FETCH  or   (cur_state = RUN and (T1_run
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
                     	else '0';	
 
-dec2if_full 		<= not(dec2if_empty_signal) ;
-
+dec2if_empty        <= dec2if_empty_signal;
 
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 
@@ -688,7 +685,32 @@ dec_mem_data <= rdata3_signal;
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
 inc_pc_signal 		<= dec2if_push when cur_state = RUN else '0';
-dec_pc 				<= reg_pc_signal ;
+
+
+proc_name: process(ck)
+    function to_string ( a: std_logic_vector) return string is
+        variable b : string (1 to a'length) := (others => NUL);
+        variable stri : integer := 1; 
+        begin
+        for i in a'range loop
+            b(stri) := std_logic'image(a((i)))(2);  
+        stri := stri+1;
+        end loop;
+        return b;
+        end function;
+    
+        function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
+            variable b : string (1 to 1) := (others => NUL);
+        begin
+            b(1) := std_logic'image(a)(2);  
+        return b;
+        end function;
+   begin
+       report "if_ir : " & to_string(if_ir);
+       report "if2dec_empty : " & to_string(if2dec_empty);
+       report "state : " & state_type'image(cur_state);
+   end process proc_name;
+
 
 	end Behavior;
 

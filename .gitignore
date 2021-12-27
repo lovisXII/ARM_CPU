@@ -3,3 +3,5 @@
 *.vcd 
 *.vst 
 *.vbe
+*.lst
+work/*

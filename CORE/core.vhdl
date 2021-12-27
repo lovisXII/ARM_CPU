@@ -57,10 +57,10 @@ Component IFetch
 			vss				: in bit);
 end Component;
 
-Component fifo_125b
+Component fifo_127b
 	PORT(
-		din		: in std_logic_vector(124 downto 0);
-		dout		: out std_logic_vector(124 downto 0);
+		din		: in std_logic_vector(126 downto 0);
+		dout		: out std_logic_vector(126 downto 0);
 
 		-- commands
 		push		: in std_logic;
@@ -325,18 +325,19 @@ Signal mem_dest		: Std_Logic_Vector(3 downto 0);
 Signal mem_wb			: Std_Logic;
 
 
-Signal dec2exe_output 	 	: Std_Logic_Vector(124 downto 0) ;
-Signal dec2exe_input 	 	: Std_Logic_Vector(124 downto 0) ;
+Signal dec2exe_output 	 	: Std_Logic_Vector(126 downto 0) ;
+Signal dec2exe_input 	 	: Std_Logic_Vector(126 downto 0) ;
 Signal dec2exe_full  	 	: Std_Logic ; 
 Signal dec_alu_cmd_signal	: Std_Logic_Vector(1 downto 0) ;
+
+
 begin
 
 
 dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_flag_wb 	&
 					   		dec_mem_data 		& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
 					   		dec_shift_lsl 		& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
-					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy  	&
-					   		dec_alu_add 		& dec_alu_and  	& dec_alu_or 	& dec_alu_xor ;
+					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy & dec_alu_cmd_signal;
 
 dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else
 							"01" when dec2exe_output(2)		= '1' else
@@ -443,7 +444,7 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
 					vdd	 			=> vdd,
 					vss	 			=> vss);
 
-	dec2exe : fifo_125b 
+	dec2exe : fifo_127b 
 	port map(
 		din 	=> 	dec2exe_input ,	
 
@@ -469,38 +470,38 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
 					exe_pop			=> exe_pop,
 
 	-- Decode interface operands
-					dec_op1			=> dec2exe_output(128 downto 97),
-					dec_op2			=> dec2exe_output(96 downto 65 ),
-					dec_exe_dest	=> dec2exe_output(64 downto 61),
-					dec_exe_wb		=> dec2exe_output(60),
-					dec_flag_wb		=> dec2exe_output(59),
+					dec_op1			=> dec2exe_output(126 downto 95),
+					dec_op2			=> dec2exe_output(94 downto 63 ),
+					dec_exe_dest	=> dec2exe_output(62 downto 59),
+					dec_exe_wb		=> dec2exe_output(58),
+					dec_flag_wb		=> dec2exe_output(57),
 
 	-- Decode to mem interface 
-					dec_mem_data	=> dec2exe_output(58 downto 27),
-					dec_mem_dest	=> dec2exe_output(26 downto 23),
-					dec_pre_index 	=> dec2exe_output(22) ,
+					dec_mem_data	=> dec2exe_output(56 downto 25),
+					dec_mem_dest	=> dec2exe_output(24 downto 21),
+					dec_pre_index 	=> dec2exe_output(20) ,
 
-					dec_mem_lw		=> dec2exe_output(21),
-					dec_mem_lb		=> dec2exe_output(20),
-					dec_mem_sw		=> dec2exe_output(19),
-					dec_mem_sb		=> dec2exe_output(18),
+					dec_mem_lw		=> dec2exe_output(19),
+					dec_mem_lb		=> dec2exe_output(18),
+					dec_mem_sw		=> dec2exe_output(17),
+					dec_mem_sb		=> dec2exe_output(16),
 
 	-- Shifter command
-					dec_shift_lsl	=> dec2exe_output(17),
-					dec_shift_lsr	=> dec2exe_output(16),
-					dec_shift_asr	=> dec2exe_output(15),
-					dec_shift_ror	=> dec2exe_output(14),
-					dec_shift_rrx	=> dec2exe_output(13),
-					dec_shift_val	=> dec2exe_output(12 downto 8),
-					dec_cy			=> dec2exe_output(7),
+					dec_shift_lsl	=> dec2exe_output(15),
+					dec_shift_lsr	=> dec2exe_output(14),
+					dec_shift_asr	=> dec2exe_output(13),
+					dec_shift_ror	=> dec2exe_output(12),
+					dec_shift_rrx	=> dec2exe_output(11),
+					dec_shift_val	=> dec2exe_output(10 downto 6),
+					dec_cy			=> dec2exe_output(5),
 
 	-- Alu operand selection
-					dec_comp_op1	=> dec2exe_output(6),
-					dec_comp_op2	=> dec2exe_output(5),
-					dec_alu_cy 		=> dec2exe_output(4) ,
+					dec_comp_op1	=> dec2exe_output(4),
+					dec_comp_op2	=> dec2exe_output(3),
+					dec_alu_cy 		=> dec2exe_output(2) ,
 
 	-- Alu command
-					dec_alu_cmd		=> dec_alu_cmd_signal ,
+					dec_alu_cmd		=> dec2exe_output(1 downto 0) ,
 
 	-- Exe bypass to decod
 					exe_res			=> exe_res,
@@ -565,5 +566,37 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
 	-- global interface
 					vdd	 			=> vdd,
 					vss	 			=> vss);
+
+
+
+
+
+
+
+
+
+
+   proc_name: process(ck)
+    function to_string ( a: std_logic_vector) return string is
+        variable b : string (1 to a'length) := (others => NUL);
+        variable stri : integer := 1; 
+        begin
+        for i in a'range loop
+            b(stri) := std_logic'image(a((i)))(2);  
+        stri := stri+1;
+        end loop;
+        return b;
+        end function;
+    
+        function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
+            variable b : string (1 to 1) := (others => NUL);
+        begin
+            b(1) := std_logic'image(a)(2);  
+        return b;
+        end function;
+   begin
+       report "dec_pc : " & to_string(dec_pc);
+       report "reset_n : " & to_string(reset_n);
+   end process proc_name;
 
 end;
