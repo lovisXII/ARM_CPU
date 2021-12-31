@@ -586,7 +586,7 @@ dec2if_empty        <= dec2if_empty_signal;
 
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 --TODO make sur the read register are valid in case of mem or branch (by changing need_rv1-4)
-radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') 						else
+radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and (T1_run or T3_run) = '1') 						else
                 		"1111" 				when cur_state 	= RUN 	and T4_run = '1' 						else
                 		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";

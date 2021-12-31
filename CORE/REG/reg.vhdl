@@ -362,7 +362,7 @@ architecture Behavior OF Reg is
 		read_regs: 	process(radr1, radr2, radr3, radr4, c, z, n, ovr, czn_valid, ovr_valid, regs, bits_valid)
 			variable index : integer;
             variable reg_rd4_full : std_logic_vector(31 downto 0);
-			begin
+            begin
                 -- Read registers
                 index := to_integer(unsigned(radr1));
                 reg_rd1 <= regs(index);
