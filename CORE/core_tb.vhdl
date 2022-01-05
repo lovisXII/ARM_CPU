@@ -163,6 +163,7 @@ BEGIN
         variable adr: Std_Logic_Vector(31 downto 0);
 
     begin
+        if rising_edge(ck) then
         report "reading instr : " & to_string(if_adr);
         inst := std_logic_vector(to_signed(get_inst(to_integer(signed(if_adr))), 32));
         ic_inst <= inst;
@@ -171,6 +172,7 @@ BEGIN
             read := write_mem(to_integer(signed(mem_adr)), to_integer(signed(mem_data)));
         end if;
         report "executing instr : " & to_string(inst);
+    end if;
     end process testproc;
     
 

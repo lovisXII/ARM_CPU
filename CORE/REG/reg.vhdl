@@ -146,7 +146,7 @@ architecture Behavior OF Reg is
                         ovr <= '0';
                         czn_valid <= '1';
                         ovr_valid <= '1';
-                        bits_valid <= X"1111";
+                        bits_valid <= X"FFFF";
                     else
                         -- Write to register 
                     -- Le calcul de pc est fait par l'étage exec, dans le cas d'un branchement la nouvelle adresse de pc est contenue dans wdata1
@@ -394,7 +394,7 @@ architecture Behavior OF Reg is
 		-- On invalide r0 à l'étage decode et à la fin de l'étage exe on écrit dans r0 et ainsi on le revalide
 
 
-	-- 	print_regs: process(regs)
+	-- 	print_regs: process(ck)
 	-- 	function to_string ( a: std_logic_vector) return string is
 	--      variable b : string (1 to a'length) := (others => NUL);
 	--      variable stri : integer := 1; 
@@ -406,11 +406,10 @@ architecture Behavior OF Reg is
 	--    return b;
 	--    end function;
 	-- 	begin 
-	-- 		for i in 0 to 15 loop
-	-- 			report "regs" & integer'image(i) & " : " & to_string(regs(i));
-	-- 		end loop;
-    --             report "wadr1" & " : " & to_string(wadr1_oh);
-    --             report "wadr2" & " : " & to_string(wadr2_oh);
+    --             report "--------------------REG-------------------------";
+    --             report "inval_adr1_oh" & " : " & to_string(inval_adr1_oh);
+    --             report "inval_adr2_oh" & " : " & to_string(inval_adr2_oh);
+    --             report "bits_valid" & " : " & to_string(bits_valid);
 
 	-- 	end process; 
 

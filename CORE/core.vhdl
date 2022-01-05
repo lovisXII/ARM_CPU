@@ -111,8 +111,7 @@ Component Decod
 			dec_alu_cy 		: out Std_Logic;
 
 	-- Exec Synchro
-			dec2exe_empty	: out Std_Logic;
-			exe_pop			: in Std_logic;
+			dec2exe_full	: in Std_Logic;
 			dec2exe_push 	: out std_logic ;
 
 	-- Alu command
@@ -343,7 +342,6 @@ dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
 							"01" when dec_alu_and	= '1' else
 							"10" when dec_alu_or 	= '1' else
 							"11" when dec_alu_xor 	= '1' ;
-dec2exe_full 		  <= 	not(dec2exe_empty) ;
 	ifetch_i : ifetch
 	port map (
 	-- Icache interface
@@ -400,8 +398,7 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
 					dec_alu_cy 		=> dec_alu_cy ,
 
 	-- Exec Synchro
-					dec2exe_empty	=> dec2exe_empty,
-					exe_pop			=> exe_pop,
+					dec2exe_full	=> dec2exe_full,
 					dec2exe_push	=> dec2exe_push ,
 
 	-- Alu command
@@ -600,6 +597,14 @@ dec2exe_full 		  <= 	not(dec2exe_empty) ;
        report "dec_pc : " & to_string(dec_pc);
        report "reset_n : " & to_string(reset_n);
        report "dec_alu_cmd_signal : " & to_string(dec_alu_cmd_signal);
+       report "dec2exe_push : " & to_string(dec2exe_push);
+       report "exe_pop : " & to_string(exe_pop);
+       report "dec2exe_empty : " & to_string(dec2exe_empty);
+       report "dec_op1 : " & to_string(dec_op1);
+       report "dec_op2 : " & to_string(dec_op2);
+       report "dec2exe_output(126 downto 95) : " & to_string(dec2exe_output(126 downto 95));
+       report "dec2exe_output(94 downto 63 ) : " & to_string(dec2exe_output(94 downto 63 ));
+
     end if;
    end process proc_name;
 

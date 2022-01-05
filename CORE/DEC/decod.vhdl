@@ -38,9 +38,8 @@ entity Decod is
 			dec_alu_cy 		: out Std_Logic;
 
 	-- Exec Synchro
-			dec2exe_empty	: out Std_Logic; --fifo en entree dec/exe
-			exe_pop			: in Std_logic;
 			dec2exe_push 	: out std_logic ;
+            dec2exe_full   : in std_logic ;
 
 	-- Alu command
 			dec_alu_add		: out Std_Logic;
@@ -178,7 +177,6 @@ end component;
 
 signal dec2if_empty_signal : std_logic;
 signal dec2if_full_signal : std_logic;
-signal dec2exe_empty_signal : std_logic;
 
 signal cond	: Std_Logic ; -- predicat vrai ou pas
 signal condv	: Std_Logic; -- condition valide ou non
@@ -515,7 +513,7 @@ begin
 
 	T1_fetch <= not(dec2if_empty_signal) and if2dec_empty ; 			-- on peut charger de nouvelles instructions
 	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
-	T1_run <= if2dec_empty or not(dec2exe_empty_signal) or not(condv) 
+	T1_run <= if2dec_empty or dec2exe_full or not(condv) 
     or (need_rv1 and not (rv1_signal))
     or (need_rv2 and not (rv2_signal))
     or (need_rv3 and not (rv3_signal))
@@ -553,7 +551,6 @@ begin
 			end if;
 		end if;
 	end process ;
-    dec2exe_empty_signal <= '1';
 ---------------------------------------------------------INSTRUCTION DECODING------------------------------------------------------------------------------------
 
 ---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
@@ -576,7 +573,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T1_run or T4_run or T5_run) = '1') else 
                  		not(dec2if_full_signal);
 
-dec_pop 		<= '1'	when cur_state = FETCH  or   (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) 
+dec_pop 		<= '1'	when (cur_state = FETCH and T1_fetch = '0')   or   (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) 
                     	else '0';
 
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
@@ -694,7 +691,7 @@ dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and t
 dec_mem_data <= rdata3_signal;
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
-inc_pc_signal 		<= dec2if_push when cur_state = RUN else '0';
+inc_pc_signal 		<= dec2if_push when cur_state /= BRANCH else '0';
 
 
 
@@ -732,6 +729,20 @@ proc_name: process(ck)
         report "dec_op1 : " & to_string(rdata1_signal);
         report "dec_op2 : " & to_string(DEBUG_dec_op2);
         report "inc_pc_signal : " & to_string(inc_pc_signal);
+        report "T1_run : " & to_string(T1_run);
+        report "T2_run : " & to_string(T2_run);
+        report "T3_run : " & to_string(T3_run);
+        report "condv : " & to_string(condv);
+        report "reg_pc_signal : " & to_string(reg_pc_signal);
+        report "if_pop : " & to_string(if_pop);
+        report "dec2if_push : " & to_string(dec2if_push);
+        -- report "radr1_signal : " & to_string(radr1_signal);
+        -- report "rv1_signal : " & to_string(rv1_signal);
+        -- report "need_rv1 : " & to_string(need_rv1);
+        -- report "inval2_signal : " & to_string(inval2_signal);
+        -- report "inval_adr2_signal : " & to_string(inval_adr2_signal);
+        -- report "inval1_signal : " & to_string(inval1_signal);
+        -- report "inval_adr1_signal : " & to_string(inval_adr1_signal);
     end if;
    end process proc_name;
 
