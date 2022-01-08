@@ -28,7 +28,7 @@ ARCHITECTURE BEHAVIOR of ALU IS
                 BEGIN
                 -- --Les flags beuguent, il faudra les corriger
                 
-                res_add := STD_LOGIC_VECTOR('0' & SIGNED(op1) + ('0' & SIGNED(op2))) ;
+                res_add := STD_LOGIC_VECTOR('0' & SIGNED(op1) + ('0' & SIGNED(op2)) + (X"00000000" & cin)) ;
 
                 -- CASE cmd IS
                 --   WHEN "00" =>  res_var := res_add(31 downto 0) ;
