@@ -344,18 +344,21 @@ architecture Behavior OF Reg is
                     -- --PC est par défaut incrémenté à chaque cycle d'horloge
                     
 
+                    
+                    if inc_pc = '1' then 
+                        pc_int := to_integer(unsigned(regs_var(15)));
+                        pc_int := pc_int + 4;
+                        regs_var(15) := std_logic_vector(to_unsigned(pc_int, 32));
+                    end if;
+                    
+
                     reg_pc <= regs_var(15);
                     reg_pcv <= valid_var(15);
                     regs <= regs_var;
                     bits_valid <= valid_var;
                     czn_valid <= czn_valid_var;
                     ovr_valid <= ovr_valid_var;
-                    if inc_pc = '1' then 
-                        pc_int := to_integer(unsigned(regs(15)));
-                        pc_int := pc_int + 4;
-                        regs(15) <= std_logic_vector(to_unsigned(pc_int, 32));
-                    end if;
-                    end if;
+                end if;
                 end if;
 		end process write_regs;
 

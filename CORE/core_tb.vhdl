@@ -156,7 +156,7 @@ BEGIN
 
     ic_stall <= '0';
     dc_stall <= '0';
-    testproc: process(ck)
+    memwriteproc: process(ck)
         variable inst: Std_Logic_Vector(31 downto 0); -- instruction send to the cpu
         variable counter: integer;
         variable read: integer;
@@ -165,15 +165,21 @@ BEGIN
     begin
         if rising_edge(ck) then
         report "reading instr : " & to_string(if_adr);
-        inst := std_logic_vector(to_signed(get_inst(to_integer(signed(if_adr))), 32));
-        ic_inst <= inst;
-        dc_data <= std_logic_vector(to_signed(get_mem(to_integer(signed(mem_adr))), 32));
         if (mem_load = '0' and reset_n = '1') then
             read := write_mem(to_integer(signed(mem_adr)), to_integer(signed(mem_data)));
         end if;
-        report "executing instr : " & to_string(inst);
     end if;
-    end process testproc;
+    end process memwriteproc;
+
+   readinstrproc: process(if_adr)
+   begin
+        ic_inst <= std_logic_vector(to_signed(get_inst(to_integer(signed(if_adr))), 32));
+   end process readinstrproc;
+
+   readmemproc: process(mem_adr)
+   begin
+        dc_data <= std_logic_vector(to_signed(get_mem(to_integer(signed(mem_adr))), 32));
+   end process readmemproc;
     
 
 END ARCHITECTURE ;

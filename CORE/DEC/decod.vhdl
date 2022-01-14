@@ -573,7 +573,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T1_run or T4_run or T5_run) = '1') else 
                  		not(dec2if_full_signal);
 
-dec_pop 		<= '1'	when (cur_state = FETCH and T1_fetch = '0')   or   (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) 
+dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) 
                     	else '0';
 
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
