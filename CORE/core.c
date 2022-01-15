@@ -5,28 +5,29 @@
 #define MAX_INST 1000
 #define MAX_LINE_SIZE 200
 
-int instructions[MAX_INST];
+int instructions[MAX_INST]; //tableau mémoire instructions
 int cur_inst = 0;
 
 int*** mem[256] = {0};
 
 
 extern int ghdl_main(int argc, char const* argv[]);
-
+//argc nombre d'arguments du terminal
+//argv nom des arguments
 int main(int argc, char const* argv[]) {
     char* line_buf = NULL; 
     size_t line_buf_size = 0;
     FILE *file;
-    file = fopen(argv[argc - 1], "r");
+    file = fopen(argv[argc - 1], "r"); // on récup le denier argument du terminal
     printf("opening file : %s\n", argv[argc - 1]);
     if (!file)
   {
     fprintf(stderr, "Error opening file '%s'\n", argv[argc - 1]);
     return EXIT_FAILURE;
   }
-    size_t ls = MAX_LINE_SIZE - 5;
     printf("reading instructions\n");
-    while (getline(&line_buf, &line_buf_size, file) > 0) {
+    while (getline(&line_buf, &line_buf_size, file) > 0) // getline renvoie le nombre de caractère de lue et ca mets les carctères lus dans line_buff 
+    {
         printf("%s", line_buf);
         instructions[cur_inst++] = strtol(line_buf, NULL, 16);
     }
