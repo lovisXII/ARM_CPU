@@ -8,7 +8,6 @@ entity test_decode_exe is
 	port(
 		dec_pc 	: out 	std_logic_vector(31 downto 0);
 		if_ir 		: in 	std_logic_vector(31 downto 0);
-		exe_res : in std_logic_vector(31 downto 0) ; -- a tej fait nimp
 		exe_result  : out 	std_logic_vector(31 downto 0);
 		exe_c_result	: out 	Std_Logic ;
 		exe_v_result	: out 	Std_Logic ;
@@ -238,7 +237,7 @@ signal dec_alu_xor : Std_Logic;
 
 	-- Exe Write Back to reg
 
-
+signal exe_res : std_logic_vector(31 downto 0) ;
 signal exe_c : Std_Logic ;
 signal exe_n : Std_Logic ;
 signal exe_v : Std_Logic ;
@@ -297,6 +296,13 @@ dec_alu_cmd_signal	  <= 	"00" when dec2exe_output(3) 	= '1' else -- add
 							"01" when dec2exe_output(2)		= '1' else -- or
 							"10" when dec2exe_output(1) 	= '1' else -- and
 							"11" when dec2exe_output(0) 	= '1' ; -- xor
+
+
+exe_result <= exe_res ;
+exe_c_result <= exe_c ;
+exe_v_result <= exe_v ;
+exe_n_result <= exe_n ;
+exe_z_result <= exe_z ;
 
 decod_i : decod
 	port map (
@@ -398,7 +404,7 @@ decod_i : decod
 	exec_i : exec
 	port map (
 	-- Decode interface synchro
-					dec2exe_empty	=> dec2exe_empty,
+					dec2exe_empty	=> '0',
 					exe_pop			=> exe_pop,
 
 	-- Decode interface operands
@@ -436,12 +442,12 @@ decod_i : decod
 					dec_alu_cmd		=> dec_alu_cmd_signal ,
 
 	-- Exe bypass to decod
-					exe_res			=> exe_result,
+					exe_res			=> exe_res, -- what we send back to decode
 
-					exe_c			=> exe_c_result,
-					exe_v			=> exe_v_result,
-					exe_n			=> exe_n_result,
-					exe_z			=> exe_z_result,
+					exe_c			=> exe_c,
+					exe_v			=> exe_v,
+					exe_n			=> exe_n,
+					exe_z			=> exe_z,
 
 					exe_dest		=> exe_dest,
 					exe_wb			=> exe_wb,
@@ -515,6 +521,8 @@ report "alu cmd add :" &std_logic'image(dec2exe_output(3))(2);
 report "alu cmd or :" &std_logic'image(dec2exe_output(2))(2);
 report "alu cmd and  :" &std_logic'image(dec2exe_output(1))(2);
 report "alu cmd xor :" &std_logic'image(dec2exe_output(0))(2);
+report "dec_comp_op1 : " &Std_Logic'image(dec_comp_op1)(2) ;
+report "dec_comp_op2 : " &Std_Logic'image(dec_comp_op2)(2) ;
 report "-----------------exe gestion :-------------------------------------" ;
 
 report "dec_op1 entrance exec :" &to_string(dec2exe_output(128 downto 97)) ;

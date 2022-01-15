@@ -25,7 +25,7 @@ elab : analyse
 
 # Run target
 run : elab
-		$(GHDL) -c $(GHDLFLAGS) -r $(TB) $(GHDLRUNFLAGS)
+		./$(TB)
 
 # Targets to analyze libraries
 analyse: $(addsuffix .vhdl,$(MODS))
@@ -34,4 +34,4 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.o

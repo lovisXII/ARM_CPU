@@ -40,7 +40,7 @@ signal dec_comp_op2		:  Std_Logic;
 signal dec_alu_cy 		:  Std_Logic;
 
 	-- Exec Synchro
-signal dec2exe_empty	:  Std_Logic; --fifo en entree dec/exe
+signal dec2exe_full	:  Std_Logic; --fifo en entree dec/exe
 signal exe_pop			:  Std_logic;
 signal dec2exe_push 	:  std_logic ;
 
@@ -118,9 +118,10 @@ component decod is
 			dec_alu_cy 		: out Std_Logic;
 
 	-- Exec Synchro
-			dec2exe_empty	: out Std_Logic; --fifo en entree dec/exe
 			dec2exe_push 	: out std_logic ;
-			exe_pop			: in Std_logic;
+			dec2exe_full	: in Std_Logic; --fifo en entree dec/exe
+
+
 
 	-- Alu command
 			dec_alu_add		: out Std_Logic;
@@ -199,9 +200,8 @@ decod0 : decod port map
 			dec_alu_cy => dec_alu_cy,
 
 	-- Exec Synchro
-			dec2exe_empty => dec2exe_empty,
-			exe_pop => exe_pop,
-			dec2exe_push => dec2exe_push ,
+			dec2exe_push => dec2exe_push,
+			dec2exe_full => dec2exe_full ,
 
 	-- Alu command
 			dec_alu_add => dec_alu_add,
@@ -301,7 +301,7 @@ decod0 : decod port map
         elsif (counter = 3) then
         reset_n <= '1';
         -- adds r0, r0, 127
-        if_ir   <= X"e08111e2"; 
+        if_ir   <= "11100010000000010000000000000001"; 
 
         exe_pop <= '0';
         exe_res	<= X"00000000";
@@ -356,7 +356,7 @@ decod0 : decod port map
         report "dec_alu_cy : " & to_string(dec_alu_cy); 
 
 		report "------------------ Exec Synchro----------------------";
-        report "dec2exe_empty : " & to_string(dec2exe_empty); 
+        report "dec2exe_full : " & to_string(dec2exe_full); 
 
 		report "------------------ Alu command----------------------";
         report "dec_alu_add : " & to_string(dec_alu_add); 

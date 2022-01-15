@@ -1,6 +1,7 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL ;
+USE IEEE.numeric_std.ALL ;
+use ieee.math_real.all;
 
 ---------------------------------PENSER A MODIFIER REG POUR QU IL  LISE ET ECRIVE EN MEME TEMPS-----------------------------------------------
 
@@ -120,7 +121,7 @@ architecture Behavior OF Reg is
             variable regs_var: Registres;
             variable valid_var: std_logic_vector(15 downto 0);
             variable czn_valid_var, ovr_valid_var: std_logic;
-
+            variable pc_33_bits : std_logic_vector(32 downto 0) ;
 			begin
                 if rising_edge(ck) then
                     if reset_n = '0' then
@@ -346,11 +347,12 @@ architecture Behavior OF Reg is
 
                     
                     if inc_pc = '1' then 
-                        pc_int := to_integer(unsigned(regs_var(15)));
+                        pc_int := to_integer(signed(regs_var(15)));
                         pc_int := pc_int + 4;
-                        regs_var(15) := std_logic_vector(to_unsigned(pc_int, 32));
+                        pc_33_bits := std_logic_vector(to_signed(pc_int, 33));
+                        regs_var(15) := pc_33_bits(31 downto 0); 
                     end if;
-                    
+
 
                     reg_pc <= regs_var(15);
                     reg_pcv <= valid_var(15);
@@ -361,6 +363,8 @@ architecture Behavior OF Reg is
                 end if;
                 end if;
 		end process write_regs;
+
+
 
 		read_regs: 	process(radr1, radr2, radr3, radr4, c, z, n, ovr, czn_valid, ovr_valid, regs, bits_valid)
 			variable index : integer;
@@ -374,7 +378,7 @@ architecture Behavior OF Reg is
                 index := to_integer(unsigned(radr2));
                 reg_rd2 <= regs(index);
                 reg_v2 <= bits_valid(index);
-                
+
                 index := to_integer(unsigned(radr3));
                 reg_rd3 <= regs(index);
                 reg_v3 <= bits_valid(index);

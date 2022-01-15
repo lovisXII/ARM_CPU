@@ -50,9 +50,9 @@ entity EXEC is
 			exe_n				: out Std_Logic;
 			exe_z				: out Std_Logic;
 
-			exe_dest			: out Std_Logic_Vector(3 downto 0); -- Rd destination
-			exe_wb			: out Std_Logic; -- Rd destination write back
-			exe_flag_wb		: out Std_Logic; -- CSPR modifiy
+			exe_dest			: out Std_Logic_Vector(3 downto 0); -- Rd destination écriture dans REG
+			exe_wb				: out Std_Logic; -- Rd destination write back
+			exe_flag_wb			: out Std_Logic; -- CSPR modifiy
 
 	-- Mem interface
 			exe_mem_adr		: out Std_Logic_Vector(31 downto 0); -- Alu res register

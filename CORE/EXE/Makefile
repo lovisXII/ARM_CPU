@@ -32,7 +32,7 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.o
 
 synth: exec_model.vst
 

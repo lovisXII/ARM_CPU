@@ -12,7 +12,6 @@ component test_decode_exe
 	port(
 		dec_pc 	: out 	std_logic_vector(31 downto 0);
 		if_ir 	: in 	std_logic_vector(31 downto 0);
-		exe_res : in std_logic_vector(31 downto 0) ;
 		exe_result : out 	std_logic_vector(31 downto 0);
 		exe_c_result	: out 	Std_Logic ;
 		exe_v_result	: out 	Std_Logic ;
@@ -27,7 +26,6 @@ end component ;
 
 signal dec_pc :  	std_logic_vector(31 downto 0);
 signal if_ir :  	std_logic_vector(31 downto 0);
-signal exe_res : 		std_logic_vector(31 downto 0) ;
 signal exe_result :  	std_logic_vector(31 downto 0);
 signal exe_c_result :  	Std_Logic ;
 signal exe_v_result :  	Std_Logic ;
@@ -43,7 +41,6 @@ begin
 core1 : test_decode_exe port map(
  dec_pc => dec_pc ,
  if_ir => if_ir ,
- exe_res => exe_res ,
  exe_result => exe_result ,
  exe_c_result => exe_c_result ,
  exe_v_result => exe_v_result ,
@@ -103,10 +100,10 @@ core1 : test_decode_exe port map(
 
 	begin
 		if(rising_edge(ck)) then
-		if_ir  <= "11100010000000010011000000000001" ; 
-		exe_res <= "00000000000000000000000000000000" ;		
-		end if;
-		report"______________________test bench____________________________";
+
+
+		if_ir  <= "11100010000000010011000000000001" ; 	
+		report"______________________test bench 1____________________________";
 		report " dec_pc : " 	&to_string(dec_pc) ;
 		report "if_ir : " 		&to_string(if_ir) ;
 		report "exe_result : "	 	&to_string(exe_result) ;
@@ -115,6 +112,31 @@ core1 : test_decode_exe port map(
 		report "exe_n : "  		&std_logic'image(exe_n_result)(2) ;
 		report "exe_z : "  		&std_logic'image(exe_z_result)(2) ;
 		report "exe_v : "  		&std_logic'image(exe_v_result)(2) ;
+
+
+		if_ir  <= X"e06dd7cb" ; 	
+		report"______________________test bench 2____________________________";
+		report " dec_pc : " 	&to_string(dec_pc) ;
+		report "if_ir : " 		&to_string(if_ir) ;
+		report "exe_result : "	 	&to_string(exe_result) ;
+		report " exe_res : " 	&to_string(exe_result) ;
+		report "exe_c : "  		&std_logic'image(exe_c_result)(2) ;
+		report "exe_n : "  		&std_logic'image(exe_n_result)(2) ;
+		report "exe_z : "  		&std_logic'image(exe_z_result)(2) ;
+		report "exe_v : "  		&std_logic'image(exe_v_result)(2) ;
+
+
+		if_ir  <= X"e1a00000" ; 	
+		report"______________________test bench 3____________________________";
+		report " dec_pc : " 	&to_string(dec_pc) ;
+		report "if_ir : " 		&to_string(if_ir) ;
+		report "exe_result : "	 	&to_string(exe_result) ;
+		report " exe_res : " 	&to_string(exe_result) ;
+		report "exe_c : "  		&std_logic'image(exe_c_result)(2) ;
+		report "exe_n : "  		&std_logic'image(exe_n_result)(2) ;
+		report "exe_z : "  		&std_logic'image(exe_z_result)(2) ;
+		report "exe_v : "  		&std_logic'image(exe_v_result)(2) ;
+	end if ;
 	end process ;
 
 
