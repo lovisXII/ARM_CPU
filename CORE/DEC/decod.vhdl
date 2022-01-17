@@ -466,7 +466,7 @@ begin
 -- DECOD INSTRUCTION TYPE
 
 	regop_t 	<= '1' when	if_ir(27 downto 26) = 	"00"  else '0'; 
-	mult_t 		<= '1' when if_ir(27 downto 26) =	"01"  else '0';
+	trans_t 	<= '1' when if_ir(27 downto 26) =	"01"  else '0';
 	mtrans_t 	<= '1' when if_ir(27 downto 25) = 	"100" else '0';
 	branch_t 	<= '1' when if_ir(27 downto 25) =	"101" else '0';
 	--mult_t <= '1' when if_ir(27 downto 22 )="000000"; problème avec regop_t car si I et le registre source valent 0 dans l'opcode d'une inst de traitement de données ca fait la meme chose
@@ -499,7 +499,7 @@ begin
 
 	bl_i 	<= '1' when if_ir(24) = '1' and branch_t ='1' else '0'; -- le branchement fait un link
 	b_i 	<= '1' when if_ir(24) = '0' and branch_t ='1' else '0'; -- le branchement ne fait pas de link	
-		
+	
 -------------------------------------------------------------------------------
 
 --DECODING MULTIPLE TRANSFERT INSTRUCTION :
@@ -585,22 +585,22 @@ dec2if_empty        <= dec2if_empty_signal;
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 --TODO make sur the read register are valid in case of mem or branch (by changing need_rv1-4)
 radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and (T1_run or T3_run) = '1') 						else
-                		"1111" 				when cur_state 	= RUN 	and T4_run = '1' 						else
+                		"1111" 				when cur_state 	= RUN 	and (T4_run or T1_run) = '1' 						else
                 		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";
 need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and regop_t = '1') or
                                 (cur_state 	= LINK) 	else '0';
     
-radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN and T3_run = '1'	and (trans_t 	= '1' 	or regop_t = '1')) 		
+radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN and (T1_run or T3_run) = '1'	and (trans_t 	= '1' 	or regop_t = '1')) 		
 					   else "0000" ;
 
-need_rv2 <= '1' when cur_state = RUN and if_ir(25) = '0' and regop_t = '1' else '0';
-radr3_signal 		<= if_ir (3 	downto 0) 	when cur_state 	= RUN and T3_run = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) 
+need_rv2 			<= '1' when cur_state = RUN and if_ir(25) = '0' and regop_t = '1' else '0';
+radr3_signal 		<= if_ir (15 	downto 12) 	when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and trans_t 	= '1' and if_ir(20) = '0' 
 					   else "0000" ;
 
-need_rv3 <= '0';
+need_rv3 			<= '1' when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and trans_t 	= '1' 	and if_ir(20) = '0' else '0';
 
-radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and T3_run = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' 	
+radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' 	
 					   else "0000" ;
 
 need_rv4 <= '0';
@@ -692,7 +692,7 @@ dec_mem_sb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and 
 dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and trans_t = '1' 
 					   else "0000" ;
 
-dec_mem_data <= rdata3_signal;
+dec_mem_data 		<= rdata3_signal;
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
 inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1')) else dec2if_push;

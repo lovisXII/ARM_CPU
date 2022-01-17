@@ -164,8 +164,7 @@ BEGIN
 
     begin
         if rising_edge(ck) then
-        report "reading instr : " & to_string(if_adr);
-        if (mem_load = '0' and reset_n = '1') then
+        if ((mem_stw or mem_stb) = '1' and reset_n = '1') then
             read := write_mem(to_integer(signed(mem_adr)), to_integer(signed(mem_data)));
         end if;
     end if;

@@ -336,7 +336,7 @@ begin
 
 
 dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_flag_wb 	&
-					   		dec_mem_data 		& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_sw 	& dec_mem_lb 	& dec_mem_sb 	&
+					   		dec_mem_data 		& dec_mem_dest 	& dec_pre_index & dec_mem_lw 	& dec_mem_lb 	& dec_mem_sw 	& dec_mem_sb 	&
 					   		dec_shift_lsl 		& dec_shift_lsr & dec_shift_asr & dec_shift_ror & dec_shift_rrx & dec_shift_val 				&
 					   		dec_cy 				& dec_comp_op1 	& dec_comp_op2 	& dec_alu_cy & dec_alu_cmd_signal;
 

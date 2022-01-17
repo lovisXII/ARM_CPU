@@ -36,7 +36,7 @@ int main(int argc, char const* argv[]) {
 }
 
 int get_inst(int a) {
-    a = a/4;
+    a = a >> 2;
     if (a < cur_inst) {
         return instructions[a];
     }
@@ -46,30 +46,21 @@ int get_inst(int a) {
 }
 
 int get_mem(int a) {
+    a = a >> 2;
     int addr1 = a & 0xFF;
     int addr2 = (a >> 8) & 0xFF;
     int addr3 = (a >> 16) & 0xFF;
     int addr4 = (a >> 24) & 0xFF;
-    if (mem[addr1] && mem[addr1][addr2] && mem[addr1][addr2][addr3])  return mem[addr1][addr2][addr3][addr4];
+    if (mem[addr1] && mem[addr1][addr2] && mem[addr1][addr2][addr3])  {
+        printf("######### Read %x in mem to address %x. #############\n", mem[addr1][addr2][addr3][addr4], a);
+        return mem[addr1][addr2][addr3][addr4];
+    }
     else return 0;
 }
 
 int write_mem(int a, int data) {
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######### Write %x in mem to address %x. #############", data, a);
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
-    printf("######################################################");
+    a = a >> 2;
+    printf("######### Write %x in mem to address %x. #############\n", data, a);
     int addr1 = a & 0xFF;
     int addr2 = (a >> 8) & 0xFF;
     int addr3 = (a >> 16) & 0xFF;

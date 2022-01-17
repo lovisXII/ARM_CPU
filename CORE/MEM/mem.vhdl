@@ -27,7 +27,7 @@ entity Mem is
 			mem_stb			: out Std_Logic;
 			mem_load			: out Std_Logic;
 
-			mem_data			: out Std_Logic_Vector(31 downto 0);
+			mem_data		: out Std_Logic_Vector(31 downto 0);
 			dc_data			: in Std_Logic_Vector(31 downto 0);
 			dc_stall			: in Std_Logic;
 
@@ -44,8 +44,8 @@ signal lb_data : Std_Logic_Vector(31 downto 0);
 
 begin
 
-	with exe_mem_adr(1 downto 0) select
-		lb_data <=	X"000000" & dc_data(31 downto 24)	when "11",
+	with exe_mem_adr(1 downto 0) select -- pour gérer l'alignement mémoire, pour la lecture d'un byte, on selectionne quelle partie du byte on souhaite lire
+		lb_data <=	X"000000" & dc_data(31 downto 24)	when "11", 
 						X"000000" & dc_data(23 downto 16)	when "10",
 						X"000000" & dc_data(15 downto 8)		when "01",
 						X"000000" & dc_data(7 downto 0)		when others;

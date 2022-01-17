@@ -78,5 +78,5 @@ cout <= lsl16(32)     when shift_lsl = '1' else
         asr16(0)      when (shift_asr = '1' and din(0) = '1') else
         ror16(31)     when shift_ror = '1' and shift_val /= "00000" else
         din(0)        when shift_ror = '1' and shift_val = "00000" else
-        '0';
+        cin;
 END behavior ;
