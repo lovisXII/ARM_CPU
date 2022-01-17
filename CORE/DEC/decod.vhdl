@@ -572,8 +572,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 
 ---------------------------------------------------------FIFO GESTION--------------------------------------------------------------------------------------------
 
-dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T1_run or T4_run or T5_run) = '1') else 
-                 		not(dec2if_full_signal);
+dec2if_push   		<= '0' 	when dec2if_full_signal = '1' else reg_pcv_signal;
 
 dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) or cur_state = BRANCH
                     	else '0';
@@ -610,7 +609,9 @@ need_rv4 <= '0';
 dec_op1 			<=  rdata1_signal ;
 dec_op2 			<= 	rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else
 						"000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
-						"000000" & if_ir(23 downto 0) & "00" 			when cur_state = LINK  																									else -- dans le cas du link on va sommer pc avec l'offset  x 4
+						if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23 downto 0) & "00"
+						 			when cur_state = LINK or (cur_state = RUN and (T5_run = '1')) else -- dans le cas du link on va sommer pc avec l'offset  x 4
+						"11111111111111111111111111111000" 				when cur_state = RUN and (T4_run = '1') else
 						X"00000000" ;
 
 dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else

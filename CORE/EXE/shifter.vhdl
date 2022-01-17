@@ -72,7 +72,7 @@ dout <= lsl16(31 downto 0)     when shift_lsl = '1' else
         lsr16(32 downto 1)     when shift_lsr = '1' or (shift_asr = '1' and din(0) = '0') else
         asr16(32 downto 1)     when (shift_asr = '1' and din(0) = '1') else
         ror16     when shift_ror = '1' else
-        X"00000000";
+        din(31 downto 0) ;
 cout <= lsl16(32)     when shift_lsl = '1' else
         lsr16(0)      when shift_lsr = '1' or (shift_asr = '1' and din(0) = '0') else
         asr16(0)      when (shift_asr = '1' and din(0) = '1') else
