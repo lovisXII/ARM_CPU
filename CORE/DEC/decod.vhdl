@@ -64,7 +64,7 @@ entity Decod is
 			if_ir			: in Std_Logic_Vector(31 downto 0) ; -- 32 bits to decode
 			if_flush		: out Std_Logic ;
 
-	-- Ifetch synchro : fifo dec2if et if2dec
+
 			dec2if_empty	: out Std_Logic; -- si la fifo qui recup pc est vide
 			if_pop			: in Std_Logic; -- pop de la fifo dec2if
 
@@ -512,8 +512,8 @@ begin
 
 --Gestion des transitions :
 
-	T1_fetch <= not(dec2if_empty_signal) and if2dec_empty ; 			-- on peut charger de nouvelles instructions
-	T2_fetch <= not(if2dec_empty) ; 			-- la fifo est pleine donc on passe a run
+	T1_fetch <= not(dec2if_empty_signal) and if2dec_empty ; 			-- on peut charger de nouvelles instructions, quand la fifo dec2if est pleine et que if2dec est vide
+	T2_fetch <= not(if2dec_empty) ; 									-- la fifo est pleine donc on passe a run
 	T1_run <= if2dec_empty or dec2exe_full or not(condv) 
     or (need_rv1 and not (rv1_signal))
     or (need_rv2 and not (rv2_signal))
@@ -621,9 +621,14 @@ dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and
                 		"0000";		
 ---------------------------------------------------------SHIFTER GESTION-----------------------------------------------------------------------------------------
 
-dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00")
-                        or (regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000")
+-- dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00")
+--                         or (regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000")
+-- 					    else '0' ;
+
+dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00") else 
+						'1' when cur_state = RUN and T3_run = '1' and regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000"
 					    else '0' ;
+
 dec_shift_lsr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "01" 
 					    else '0' ;
 dec_shift_asr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "10" 
