@@ -65,6 +65,7 @@ signal exe_flag_wb		:   Std_Logic; -- CSPR modifiy
 	-- Ifetch  terface
 signal dec_pc 			:  	Std_Logic_Vector(31 downto 0) ; -- pc
 signal if_ir 			:   Std_Logic_Vector(31 downto 0) ; -- 32 bits to decode
+signal if_flush			: 	Std_Logic ;
 
 	-- Ifetch synchro : fifo dec2if et if2dec
 signal dec2if_empty		:  	Std_Logic; -- si la fifo qui recup pc est vide
@@ -144,6 +145,7 @@ component decod is
 	-- Ifetch interface
 			dec_pc			: out Std_Logic_Vector(31 downto 0) ; -- pc
 			if_ir			: in Std_Logic_Vector(31 downto 0) ; -- 32 bits to decode
+			if_flush		: out Std_Logic ;
 
 	-- Ifetch synchro : fifo dec2if et if2dec
 			dec2if_empty	: out Std_Logic; -- si la fifo qui recup pc est vide
@@ -224,6 +226,7 @@ decod0 : decod port map
 	-- Ifetch interface
 			dec_pc => dec_pc,
 			if_ir => if_ir,
+			if_flush => if_flush,
 
 	-- Ifetch synchro : fifo dec2if et if2dec
 			dec2if_empty => dec2if_empty,

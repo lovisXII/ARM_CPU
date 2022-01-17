@@ -49,6 +49,7 @@ Component IFetch
 			if_ir				: out Std_Logic_Vector(31 downto 0) ;
 			if2dec_empty	: out Std_Logic;
 			dec_pop			: in Std_Logic;
+			if_flush		: in Std_Logic;
 
 	-- global interface
 			ck					: in Std_Logic;
@@ -135,6 +136,7 @@ Component Decod
 	-- Ifetch interface
 			dec_pc			: out Std_Logic_Vector(31 downto 0) ;
 			if_ir				: in Std_Logic_Vector(31 downto 0) ;
+			if_flush			: out Std_Logic ; 
 
 	-- Ifetch synchro
 			dec2if_empty	: out Std_Logic;
@@ -322,7 +324,7 @@ Signal mem_pop			: Std_Logic;
 Signal mem_res			: Std_Logic_Vector(31 downto 0);
 Signal mem_dest		: Std_Logic_Vector(3 downto 0);
 Signal mem_wb			: Std_Logic;
-
+Signal if_flush 		: Std_Logic; 
 
 Signal dec2exe_output 	 	: Std_Logic_Vector(126 downto 0) ;
 Signal dec2exe_input 	 	: Std_Logic_Vector(126 downto 0) ;
@@ -358,6 +360,7 @@ dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
 					if_ir				=> if_ir,
 					if2dec_empty	=> if2dec_empty,
 					dec_pop			=> dec_pop,
+					if_flush 		=> if_flush,
 
 					reset_n			=> reset_n,
 					ck		 			=> ck,
@@ -422,6 +425,7 @@ dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
 	-- Ifetch interface
 					dec_pc			=> dec_pc,
 					if_ir				=> if_ir,
+					if_flush 		=> if_flush,
 
 	-- Ifetch synchro
 					dec2if_empty	=> dec2if_empty,

@@ -62,6 +62,7 @@ entity Decod is
 	-- Ifetch interface
 			dec_pc			: out Std_Logic_Vector(31 downto 0) ; -- pc
 			if_ir			: in Std_Logic_Vector(31 downto 0) ; -- 32 bits to decode
+			if_flush		: out Std_Logic ;
 
 	-- Ifetch synchro : fifo dec2if et if2dec
 			dec2if_empty	: out Std_Logic; -- si la fifo qui recup pc est vide
@@ -546,6 +547,7 @@ begin
 		if(rising_edge(ck)) then
 			if(reset_n = '0') then
 				cur_state <= FETCH ;
+
 			else 
 				cur_state <= next_state ;
 			end if;
@@ -573,7 +575,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 dec2if_push   		<= '0' 	when cur_state = LINK or (cur_state = RUN and (T1_run or T4_run or T5_run) = '1') else 
                  		not(dec2if_full_signal);
 
-dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) 
+dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) or cur_state = BRANCH
                     	else '0';
 
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
@@ -692,9 +694,8 @@ dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and t
 dec_mem_data <= rdata3_signal;
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
-inc_pc_signal 		<= dec2if_push when cur_state /= BRANCH else '0';
-
-
+inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1')) else dec2if_push;
+if_flush 			<= 	'1' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1')) else '0';
 
     --------------------------------DEBUG-------------------
     DEBUG_dec_op2 <= rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else

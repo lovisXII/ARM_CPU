@@ -20,6 +20,7 @@ entity IFetch is
 			if_ir			: out Std_Logic_Vector(31 downto 0) ; -- result of this load that need to be decode
 			if2dec_empty	: out Std_Logic; -- fifo control
 			dec_pop			: in Std_Logic ; -- fifo control
+			if_flush		: in Std_Logic ;
 
 	-- global interface
 			ck				: in Std_Logic ;
@@ -73,8 +74,8 @@ begin
 
 
 	if_adr_valid 	<= '1' when dec2if_empty = '0' else '0';
-	if_pop 			<= '1' when dec2if_empty = '0' and ic_stall = '0' and if2dec_full = '0' else '0';
-	if2dec_push 	<= '1' when dec2if_empty = '0' and ic_stall = '0' and if2dec_full = '0' else '0';
+	if_pop 			<= '1' when if_flush = '1' or (dec2if_empty = '0' and ic_stall = '0' and if2dec_full = '0') else '0';
+	if2dec_push 	<= '1' when if_flush = '0' and dec2if_empty = '0' and ic_stall = '0' and if2dec_full = '0' else '0';
 
 	if_adr <= dec_pc;
 end Behavior;
