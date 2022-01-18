@@ -573,7 +573,7 @@ strb_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(
 
 ---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
 
-dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i or mov_i or mvn_i) = '1' 	else '0' ; 
+dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i or mov_i or mvn_i or str_i or strb_i or ldr_i or ldrb_i) = '1' 	else '0' ; 
 dec_alu_and 	<= '1' when (and_i or tst_i or bic_i) = '1' 												else '0' ;
 dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
 dec_alu_xor		<= '1' when (eor_i or teq_i) = '1' 															else '0' ;
@@ -594,7 +594,7 @@ dec2if_push   		<= '0' 	when dec2if_full_signal = '1' else reg_pcv_signal;
 dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1') and T1_run = '0') or cur_state = BRANCH
                     	else '0';
 
-dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
+dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1' and T1_run = '0') or cur_state = LINK 
                     	else '0';	
 
 dec2if_empty        <= dec2if_empty_signal;
@@ -718,46 +718,46 @@ dec_mem_data 		<= rdata3_signal;
 
 inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') else dec2if_push;
 if_flush 			<= 	'1' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') else '0';
-proc_name: process(ck)
-    function to_string ( a: std_logic_vector) return string is
-        variable b : string (1 to a'length) := (others => NUL);
-        variable stri : integer := 1; 
-        begin
-        for i in a'range loop
-            b(stri) := std_logic'image(a((i)))(2);  
-        stri := stri+1;
-        end loop;
-        return b;
-        end function;
+-- proc_name: process(ck)
+--     function to_string ( a: std_logic_vector) return string is
+--         variable b : string (1 to a'length) := (others => NUL);
+--         variable stri : integer := 1; 
+--         begin
+--         for i in a'range loop
+--             b(stri) := std_logic'image(a((i)))(2);  
+--         stri := stri+1;
+--         end loop;
+--         return b;
+--         end function;
     
-        function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
-            variable b : string (1 to 1) := (others => NUL);
-        begin
-            b(1) := std_logic'image(a)(2);  
-        return b;
-        end function;
-   begin
-    if (rising_edge(ck)) then
-        report "---------------DECOD--------------------";
-        report "if_ir : " & to_string(if_ir);
-        report "state : " & state_type'image(cur_state);
-        report "inc_pc_signal : " & to_string(inc_pc_signal);
-        report "T1_run : " & to_string(T1_run);
-        report "T2_run : " & to_string(T2_run);
-        report "T3_run : " & to_string(T3_run);
-        report "condv : " & to_string(condv);
-        report "reg_pc_signal : " & to_string(reg_pc_signal);
-        report "if_pop : " & to_string(if_pop);
-        report "dec2if_push : " & to_string(dec2if_push);
-        -- report "radr1_signal : " & to_string(radr1_signal);
-        -- report "rv1_signal : " & to_string(rv1_signal);
-        -- report "need_rv1 : " & to_string(need_rv1);
-        -- report "inval2_signal : " & to_string(inval2_signal);
-        -- report "inval_adr2_signal : " & to_string(inval_adr2_signal);
-        -- report "inval1_signal : " & to_string(inval1_signal);
-        -- report "inval_adr1_signal : " & to_string(inval_adr1_signal);
-    end if;
-   end process proc_name;
+--         function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
+--             variable b : string (1 to 1) := (others => NUL);
+--         begin
+--             b(1) := std_logic'image(a)(2);  
+--         return b;
+--         end function;
+--    begin
+--     if (rising_edge(ck)) then
+--         report "---------------DECOD--------------------";
+--         report "if_ir : " & to_string(if_ir);
+--         report "state : " & state_type'image(cur_state);
+--         report "inc_pc_signal : " & to_string(inc_pc_signal);
+--         report "T1_run : " & to_string(T1_run);
+--         report "T2_run : " & to_string(T2_run);
+--         report "T3_run : " & to_string(T3_run);
+--         report "condv : " & to_string(condv);
+--         report "reg_pc_signal : " & to_string(reg_pc_signal);
+--         report "if_pop : " & to_string(if_pop);
+--         report "dec2if_push : " & to_string(dec2if_push);
+--         -- report "radr1_signal : " & to_string(radr1_signal);
+--         -- report "rv1_signal : " & to_string(rv1_signal);
+--         -- report "need_rv1 : " & to_string(need_rv1);
+--         -- report "inval2_signal : " & to_string(inval2_signal);
+--         -- report "inval_adr2_signal : " & to_string(inval_adr2_signal);
+--         -- report "inval1_signal : " & to_string(inval1_signal);
+--         -- report "inval_adr1_signal : " & to_string(inval_adr1_signal);
+--     end if;
+--    end process proc_name;
 
 
 	end Behavior;

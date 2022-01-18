@@ -577,39 +577,39 @@ dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
 
 
 
-   proc_name: process(ck)
-    function to_string ( a: std_logic_vector) return string is
-        variable b : string (1 to a'length) := (others => NUL);
-        variable stri : integer := 1; 
-        begin
-        for i in a'range loop
-            b(stri) := std_logic'image(a((i)))(2);  
-        stri := stri+1;
-        end loop;
-        return b;
-        end function;
+--    proc_name: process(ck)
+--     function to_string ( a: std_logic_vector) return string is
+--         variable b : string (1 to a'length) := (others => NUL);
+--         variable stri : integer := 1; 
+--         begin
+--         for i in a'range loop
+--             b(stri) := std_logic'image(a((i)))(2);  
+--         stri := stri+1;
+--         end loop;
+--         return b;
+--         end function;
     
-        function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
-            variable b : string (1 to 1) := (others => NUL);
-        begin
-            b(1) := std_logic'image(a)(2);  
-        return b;
-        end function;
-   begin
-    if (rising_edge(ck)) then
-        report "---------------CORE--------------------";
-       report "dec_pc : " & to_string(dec_pc);
-       report "reset_n : " & to_string(reset_n);
-       report "dec_alu_cmd_signal : " & to_string(dec_alu_cmd_signal);
-       report "dec2exe_push : " & to_string(dec2exe_push);
-       report "exe_pop : " & to_string(exe_pop);
-       report "dec2exe_empty : " & to_string(dec2exe_empty);
-       report "dec_op1 : " & to_string(dec_op1);
-       report "dec_op2 : " & to_string(dec_op2);
-       report "dec2exe_output(126 downto 95) : " & to_string(dec2exe_output(126 downto 95));
-       report "dec2exe_output(94 downto 63 ) : " & to_string(dec2exe_output(94 downto 63 ));
+--         function to_string ( a: std_logic) return string is -- permet d'utiliser la fonction to_string pour les std_logic 
+--             variable b : string (1 to 1) := (others => NUL);
+--         begin
+--             b(1) := std_logic'image(a)(2);  
+--         return b;
+--         end function;
+--    begin
+--     if (rising_edge(ck)) then
+--         report "---------------CORE--------------------";
+--        report "dec_pc : " & to_string(dec_pc);
+--        report "reset_n : " & to_string(reset_n);
+--        report "dec_alu_cmd_signal : " & to_string(dec_alu_cmd_signal);
+--        report "dec2exe_push : " & to_string(dec2exe_push);
+--        report "exe_pop : " & to_string(exe_pop);
+--        report "dec2exe_empty : " & to_string(dec2exe_empty);
+--        report "dec_op1 : " & to_string(dec_op1);
+--        report "dec_op2 : " & to_string(dec_op2);
+--        report "dec2exe_output(126 downto 95) : " & to_string(dec2exe_output(126 downto 95));
+--        report "dec2exe_output(94 downto 63 ) : " & to_string(dec2exe_output(94 downto 63 ));
 
-    end if;
-   end process proc_name;
+--     end if;
+--    end process proc_name;
 
 end;
