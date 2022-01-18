@@ -520,11 +520,11 @@ begin
     or (need_rv3 and not (rv3_signal))
     or (need_rv4 and not (rv4_signal));
     -- quand fifo if2dec est vide ou que fifo exe pleine ou que predicat est invalide ou un registre est invalide
-	T2_run <= not(cond) and not(T1_run); 						-- condition annulée -> annulation instruction
-	T3_run <= cond and not(bl_i or b_i or stm_i or ldm_i) and not(T1_run); 							-- condition reussi et instruction tourne
-	T4_run <= bl_i and cond and not(T1_run); 							-- branchement et link
-	T5_run <= b_i and cond and not(T1_run); 							-- branchement et pas de link
-	T6_run <= (stm_i or ldm_i) and cond  and not(T1_run); 					-- acces multiples
+	T2_run <= not(cond); 						-- condition annulée -> annulation instruction
+	T3_run <= cond and not(bl_i or b_i or stm_i or ldm_i); 							-- condition reussi et instruction tourne
+	T4_run <= bl_i and cond; 							-- branchement et link
+	T5_run <= b_i and cond; 							-- branchement et pas de link
+	T6_run <= (stm_i or ldm_i) and cond; 					-- acces multiples
 	--sur le truc du prof T3 est notre T1
     --T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
 	--T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
@@ -575,7 +575,7 @@ dec_alu_cy 		<= '1' when (sub_i or rsb_i or sbc_i or rsc_i or cmp_i) = '1' else 
 
 dec2if_push   		<= '0' 	when dec2if_full_signal = '1' else reg_pcv_signal;
 
-dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1')) or cur_state = BRANCH
+dec_pop 		<= '1'	when (cur_state = RUN and (T2_run = '1' or T3_run = '1' or T6_run = '1') and T1_run = '0') or cur_state = BRANCH
                     	else '0';
 
 dec2exe_push 		<= '1' when (cur_state = RUN and (T3_run or T4_run or T5_run) = '1') or cur_state = LINK 
@@ -585,26 +585,27 @@ dec2if_empty        <= dec2if_empty_signal;
 
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 --TODO make sur the read register are valid in case of mem or branch (by changing need_rv1-4)
-radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and (T1_run or T3_run) = '1') 						else
-                		"1111" 				when cur_state 	= RUN 	and (T4_run or T1_run) = '1' 						else
+radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') 						else
+                		"1111" 				when cur_state 	= RUN 	and T4_run = '1' 						else
                 		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";
 need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and (regop_t = '1' or trans_t = '1')) or
                                 (cur_state 	= LINK) 	else '0';
     
-radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN and (T1_run or T3_run) = '1'	and (trans_t 	= '1' 	or regop_t = '1')) 		
+radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN  and (trans_t = '1' 	or regop_t = '1')) 		
 					   else "0000" ;
 
 need_rv2 			<= '1' when cur_state = RUN and if_ir(25) = '0' and regop_t = '1' else '0';
-radr3_signal 		<= if_ir (15 	downto 12) 	when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and trans_t 	= '1' and if_ir(20) = '0' 
+radr3_signal 		<= if_ir (15 	downto 12) 	when cur_state 	= RUN 	and trans_t 	= '1' and if_ir(20) = '0' 
 					   else "0000" ;
 
-need_rv3 			<= '1' when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and trans_t 	= '1' 	and if_ir(20) = '0' else '0';
+need_rv3 			<= '1' when cur_state 	= RUN and T3_run = '1' 	and trans_t 	= '1' 	and if_ir(20) = '0' else '0';
 
-radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and (T1_run or T3_run) = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' 	
+radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and T3_run = '1' 	and ((trans_t 	= '1' 	and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) ='1' 	
 					   else "0000" ;
 
-need_rv4 <= '0';
+need_rv4 <= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) = '1' 
+            else '0';
 
 ---------------------------------------------------------WRITING PORT & OP 1 & OP 2 VALUE--------------------------------------------------------------------------------------------
 dec_op1 			<=  rdata1_signal when mov_i = '0' and mvn_i = '0' else X"00000000";
@@ -657,22 +658,22 @@ inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1
 
 inval_adr2_signal 	<= if_ir(15 downto 12);
 
-inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') 							else
-                    	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
-                    	'1' when (cur_state = RUN and (T4_run = '1' or T5_run = '1')) or cur_state = LINK 
+inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and T1_run = '0' and trans_t = '1') 							else
+                    	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and T1_run = '0' and regop_t = '1') else
+                    	'1' when (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') or cur_state = LINK 
                     	else '0';
 
-inval2_signal 		<= '1' when (cur_state = RUN and T3_run = '1' and trans_t = '1' and ldr_i = '1') 
+inval2_signal 		<= '1' when (cur_state = RUN and T3_run = '1' and T1_run = '0' and trans_t = '1' and ldr_i = '1') 
 						else '0';
 
-dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1') 
+dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1' and T1_run = '0') 
 					    else '0';
 
-inval_czn_signal 	<= if_ir(20) when (cur_state = RUN and T3_run = '1' and regop_t = '1') 
+inval_czn_signal 	<= if_ir(20) when (cur_state = RUN and T3_run = '1' and T1_run = '0' and regop_t = '1') 
 					   else '0';
 
 inval_ovr_signal 	<= if_ir(20) and (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i)
-     					when (cur_state = RUN and T3_run = '1' and regop_t = '1') else '0';
+     					when (cur_state = RUN and T3_run = '1' and T1_run = '0' and regop_t = '1') else '0';
 
 dec_exe_wb 			<= inval1_signal;
 -- mem_wb 				<= inval2_signal; n'existe pas
@@ -703,14 +704,8 @@ dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and t
 dec_mem_data 		<= rdata3_signal;
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
-inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1')) else dec2if_push;
-if_flush 			<= 	'1' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1')) else '0';
-
-    --------------------------------DEBUG-------------------
-    DEBUG_dec_op2 <= rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else
-        "000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
-        "000000" & if_ir(23 downto 0) & "00" 			when cur_state = LINK  																									else -- dans le cas du link on va sommer pc avec l'offset  x 4
-        X"00000000";
+inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') else dec2if_push;
+if_flush 			<= 	'1' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') else '0';
 proc_name: process(ck)
     function to_string ( a: std_logic_vector) return string is
         variable b : string (1 to a'length) := (others => NUL);
@@ -734,11 +729,6 @@ proc_name: process(ck)
         report "---------------DECOD--------------------";
         report "if_ir : " & to_string(if_ir);
         report "state : " & state_type'image(cur_state);
-        report "exe_res : " & to_string(exe_res);
-        report "exe_dest : " & to_string(exe_dest);
-        report "exe_wb : " & to_string(exe_wb);
-        report "dec_op1 : " & to_string(rdata1_signal);
-        report "dec_op2 : " & to_string(DEBUG_dec_op2);
         report "inc_pc_signal : " & to_string(inc_pc_signal);
         report "T1_run : " & to_string(T1_run);
         report "T2_run : " & to_string(T2_run);
