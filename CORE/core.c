@@ -29,7 +29,9 @@ int main(int argc, char const* argv[]) {
     while (getline(&line_buf, &line_buf_size, file) > 0) // getline renvoie le nombre de caractère de lue et ca mets les carctères lus dans line_buff 
     {
         printf("%s", line_buf);
-        instructions[cur_inst++] = strtol(line_buf, NULL, 16);
+        int i = strtol(line_buf, NULL, 16);
+        write_mem(4*cur_inst, i);
+        instructions[cur_inst++] = i;
     }
     ghdl_main(argc - 1, argv);
     return 0;
