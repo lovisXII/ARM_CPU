@@ -147,8 +147,8 @@ process
 
 begin
 
-	GoodAdr <= std_logic_vector(TO_SIGNED(mem_goodadr + 4, 32));
-	BadAdr <= std_logic_vector(TO_SIGNED(mem_badadr + 4, 32));
+	GoodAdr <= std_logic_vector(TO_SIGNED(mem_goodadr, 32));
+	BadAdr <= std_logic_vector(TO_SIGNED(mem_badadr, 32));
 
 	reset_n <= '0';
 	ck <= '0';
