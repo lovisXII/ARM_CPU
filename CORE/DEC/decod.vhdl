@@ -13,7 +13,7 @@ entity Decod is
 			dec_exe_wb		: out Std_Logic; -- Rd destination write back
 			dec_flag_wb		: out Std_Logic; -- CSPR modifiy
 
-	-- Decod to mem via exec
+	-- Decod to mem via exec 
 			dec_mem_data	: out Std_Logic_Vector(31 downto 0); -- data to MEM
 			dec_mem_dest	: out Std_Logic_Vector(3 downto 0); -- @ of MEM
 			dec_pre_index 	: out Std_logic; -- say if we do pre index or no []!

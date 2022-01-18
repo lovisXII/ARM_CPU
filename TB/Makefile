@@ -1,7 +1,8 @@
-GHDL=/home/jeanlou/Outils/Ghdl/bin/ghdl
-#GHDL=/usr/bin/ghdl
-GHDL_OP = -v
-C_MOD_DIR = ../../C_model/
+GHDL=ghdl
+BUILD=../work
+GHDL_OP = -v --workdir=$(BUILD)
+C_MOD_DIR = ../C_model/
+CORE_DIR = ../CORE/
 all : main_tb
 
 ram.o : ram.vhdl
@@ -16,8 +17,9 @@ dcache.o : dcache.vhdl ram.o
 main_tb.o : main_tb.vhdl icache.o dcache.o ram.o 
 	${GHDL} -a ${GHDL_OP} main_tb.vhdl
 
-arm_core.o : ../CORE/arm_core.vhdl ifetch.o decod.o exec.o mem.o
-	${GHDL} -a ${GHDL_OP} ../CORE/arm_core.vhdl
+core.o :
+	make -C ../CORE analyse
+	cp $(BUILD)/* .
 	
 ifetch.o : ../IFETCH/ifetch.vhdl fifo_generic.o
 	${GHDL} -a ${GHDL_OP} ../IFETCH/ifetch.vhdl
@@ -52,8 +54,16 @@ mem.o : ../MEM/mem.vhdl
 fifo_generic.o : ../FIFO/fifo_generic.vhdl
 	${GHDL} -a ${GHDL_OP} ../FIFO/fifo_generic.vhdl
 
-main_tb : main_tb.o ram.o icache.o dcache.o arm_core.o ${C_MOD_DIR}/lib/arm_ghdl.o
+${C_MOD_DIR}/lib/arm_ghdl.o: ${C_MOD_DIR}/ReadElf/lib/ElfObj.o
+	make -C ${C_MOD_DIR}/src
+
+${C_MOD_DIR}/ReadElf/lib/ElfObj.o:
+	make -C ${C_MOD_DIR}/ReadElf/src
+
+main_tb : main_tb.o ram.o icache.o dcache.o core.o ${C_MOD_DIR}/lib/arm_ghdl.o ${C_MOD_DIR}/ReadElf/lib/ElfObj.o
 	${GHDL} -e ${GHDL_OP} -Wl,${C_MOD_DIR}/lib/mem.o -Wl,${C_MOD_DIR}/lib/arm_ghdl.o -Wl,${C_MOD_DIR}/ReadElf/lib/ElfObj.o main_tb
 
 clean :
-	rm *.o main_tb work-obj93.cf *.vcd
+	rm -f *.o main_tb work-obj93.cf *.vcd *.lst *.out $(BUILD)/*
+	make -C ${C_MOD_DIR}/ReadElf/src clean
+	make -C ${C_MOD_DIR}/src clean

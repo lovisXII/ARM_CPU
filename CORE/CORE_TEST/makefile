@@ -3,11 +3,11 @@
 # Command used to generate this makefile:
 # ghdl --gen-makefile exec_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
-WORKDIR=../../work
+BUILD=../../work
 
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL?=ghdl
-GHDLFLAGS?=--workdir=$(WORKDIR)
+GHDLFLAGS?=--workdir=$(BUILD)
 GHDLRUNFLAGS?=
 TB=test_decode_exe_tb
 COMPONENTS=test_decode_exe
@@ -39,5 +39,5 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.lst *.o
+		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.lst *.o
 		rm -f *.o *.cf

@@ -4,11 +4,11 @@
 # ghdl --gen-makefile reg_tb
 #export MBK_TARGET_LIB=/soc/alliance/cells/sxlib/
  
-WORKDIR=../../work
+BUILD=../../work
 
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL?=ghdl
-GHDLFLAGS?=--workdir=$(WORKDIR)
+GHDLFLAGS?=--workdir=$(BUILD)
 GHDLRUNFLAGS?=
 COMPONENTS=fifo_72b fifo_32b fifo_129b fifo_125b fifo_127b
 MODS=$(COMPONENTS)
@@ -23,7 +23,7 @@ analyse: $(addsuffix .vhdl,$(MODS))
 		$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc
+		rm -f $(BUILD)/* *.vst *.vbe *.xsc
 
 synth: fifo_72b.vst fifo_32b.vst fifo_129b.vst
 

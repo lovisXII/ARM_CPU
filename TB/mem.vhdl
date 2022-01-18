@@ -14,9 +14,9 @@ package mem is
 
 	function mem_badadr return integer;
 	attribute foreign of mem_badadr : function is "VHPIDIRECT mem_badadr";
-
+   
 end mem;
-
+   
 package body mem is
 	function mem_lw (adr : integer) return integer is
 	begin

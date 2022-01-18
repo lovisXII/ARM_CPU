@@ -55,7 +55,7 @@ int get_mem(int a) {
         printf("######### Read %x in mem to address %x. #############\n", mem[addr1][addr2][addr3][addr4], a);
         return mem[addr1][addr2][addr3][addr4];
     }
-    else return 0;
+    else return 0;    
 }
 
 int write_mem(int a, int data) {

@@ -1,29 +1,28 @@
-WORKDIR=../work
+BUILD=../work
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
 GHDL?=ghdl
-GHDLFLAGS?=--workdir=$(WORKDIR)
+GHDLFLAGS?=--workdir=$(BUILD)
 GHDLRUNFLAGS?=
-COMPONENTS=core IFETCH/ifetch MEM/mem
+COMPONENTS=core IFETCH/ifetch DEC/decod EXE/exec EXE/shifter EXE/alu MEM/mem REG/reg REG/one_hot util/fifo_127b util/fifo_32b util/fifo_72b
 TB=core_tb
-MODS=$(COMPONENTS) $(TB)
+MODS=$(TB) $(COMPONENTS) 
+SOURCES=$(addsuffix .vhdl, $(MODS))
+OBJ=$(addsuffix .o, $(addprefix $(BUILD)/, $(notdir $(MODS))))
 
 
-# Default target : elaborate
-all : bind core.c
-	cd $(WORKDIR) && clang ../CORE/core.c -Wl,`ghdl --list-link $(TB)`
+all : $(BUILD)/a.out
 
-elab: analyse
-	$(GHDL) -c $(GHDLFLAGS) -e $(TB)
+analyse: $(OBJ)
+
+$(BUILD)/a.out: $(BUILD)/e~$(TB).o core.c
+	cd $(BUILD) && clang ../CORE/core.c -Wl,`ghdl --list-link $(TB)`
 
 
-bind: analyse
-	cd $(WORKDIR) && ghdl --bind $(TB)
-
-# Targets to analyze libraries
-analyse: $(addsuffix .vhdl,$(MODS))
-		cd DEC && make analyse
-		cd EXE && make analyse 
-		$(GHDL) -a $(GHDLFLAGS) $^
+$(BUILD)/e~$(TB).o: $(OBJ)
+	cd $(BUILD) && ghdl --bind $(TB)
+	
+$(BUILD)/core_tb.o: $(SOURCES)
+	$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(WORKDIR)/* *.vst *.vbe *.xsc *.lst *.o
+		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.lst *.o
