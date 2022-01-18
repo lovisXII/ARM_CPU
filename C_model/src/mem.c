@@ -4,16 +4,36 @@
 #include "mem.h"
 #include "ElfObj.h"
 
+//ElfObj est un struct def par :
+// struct ELFObject
+// {
+//   const char* name_ = "no name";
+//   unsigned char* base_ = nullptr;
+//   size_t size_ = 0;
+// };
+
+
+//uint32_t is a numeric type that guarantees 32 bits, value is unsigned
+
 #define STACK_TOP 0x80000000
 #define STACK_SIZE 4096
 
 typedef struct _seg
 	{
 	uint32_t va;
-	void *ra;
+	void *ra; // mem bloc
 	size_t size;
 	struct _seg *next;
 	}Seg;
+
+/*
+typedef struct _seg
+{
+
+}Seg;
+_seg et Seg désigne tous deux le nom de la struct, seulement Seg n'est pas encore connu à l'intérieur de la struct, il est donc necessaire d'utiliser _seg pour pouvoir déclarer un pointeur sur struct
+L'utilisation de typedef permet d'éviter d'avoir à répéter le mot clef struct dans la définition des attributs de la structure
+*/
 
 static Seg *TabSeg = NULL;
 
@@ -31,15 +51,18 @@ uint32_t mem_badadr()
 	}
 
 int mem_add_seg(uint32_t adr, size_t size, void *src)
+//src is a mem bloc
 	{
-	Seg *ps = TabSeg;
+	Seg *ps = TabSeg; // on créer un pointeur sur Seg dont next pointe sur TabSeg
 	Seg *new_seg = NULL;
 
 	if (ps == NULL)
 		{
-		if ((TabSeg = malloc(sizeof(Seg))) == NULL) return 0;
-		if ((TabSeg->ra = malloc(size)) == NULL) return 0;
-		if (src) memcpy(TabSeg->ra, src, size);
+		if ((TabSeg = malloc(sizeof(Seg))) == NULL) return 0; // malloc return NULL if allocation isn't possible
+		if ((TabSeg->ra = malloc(size)) == NULL) return 0; // same
+		if (src) memcpy(TabSeg->ra, src, size);// memcpy allow to copy a memory bloc from a source to a destination
+		//void * memcpy( void * destination, const void * source, size_t size ); 
+		//if src isn't Null, it's copy to TabSeg -> ra
 		TabSeg->va = adr;
 		TabSeg->size = size;
 		TabSeg->next = NULL;
