@@ -10,8 +10,6 @@ _start:
     /* 0x04 Undefined Instruction Interrupt vector address */
     b    _bad
     nop 
-    nop
-    nop
 
 _bad :
     add r0, r0, r0

@@ -556,7 +556,8 @@ begin
 ---------------------------------------------------------INSTRUCTION DECODING------------------------------------------------------------------------------------
 
 ---------------------------------------------------------DECODING ALU COMMAND------------------------------------------------------------------------------------
-dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i) = '1' 	else '0' ; 
+
+dec_alu_add 	<= '1' when (sub_i or rsb_i or add_i or adc_i or sbc_i or rsc_i or cmp_i or cmn_i or mov_i or mvn_i) = '1' 	else '0' ; 
 dec_alu_and 	<= '1' when (and_i or tst_i or bic_i) = '1' 												else '0' ;
 dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
 dec_alu_xor		<= '1' when (eor_i or teq_i) = '1' 															else '0' ;
@@ -588,7 +589,7 @@ radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and (T1_run or T3_r
                 		"1111" 				when cur_state 	= RUN 	and (T4_run or T1_run) = '1' 						else
                 		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";
-need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and regop_t = '1') or
+need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and (regop_t = '1' or trans_t = '1')) or
                                 (cur_state 	= LINK) 	else '0';
     
 radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN and (T1_run or T3_run) = '1'	and (trans_t 	= '1' 	or regop_t = '1')) 		
@@ -606,7 +607,7 @@ radr4_signal 		<= if_ir (11 	downto 8) 	when cur_state 	= RUN and (T1_run or T3_
 need_rv4 <= '0';
 
 ---------------------------------------------------------WRITING PORT & OP 1 & OP 2 VALUE--------------------------------------------------------------------------------------------
-dec_op1 			<=  rdata1_signal ;
+dec_op1 			<=  rdata1_signal when mov_i = '0' and mvn_i = '0' else X"00000000";
 dec_op2 			<= 	rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else
 						"000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
 						if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23 downto 0) & "00"
@@ -626,7 +627,8 @@ dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and
 -- 					    else '0' ;
 
 dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00") else 
-						'1' when cur_state = RUN and T3_run = '1' and regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000"
+						'1' when cur_state = RUN and T3_run = '1' and regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000" else
+						'1' when cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(25) = '1'
 					    else '0' ;
 
 dec_shift_lsr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "01" 
@@ -634,25 +636,26 @@ dec_shift_lsr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1'
 dec_shift_asr 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "10" 
 						else '0' ;
 dec_shift_ror 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11" else 
-				 	   '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) /= "0000")) 
+				 	   '1' when cur_state = RUN and T3_run = '1' and ((regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) /= "0000")) 
                         else '0';
 
 dec_shift_rrx 		<= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "11" and if_ir(11 downto 7) = "00001" else '0' ;
 
 dec_shift_val 		<= 	if_ir(11 downto 7) 			when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) = '0' 	else
-				 		if_ir(11 downto 8) & '0' 	when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) 						else
-				 		rdata4_signal(4 downto 0) 	when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '0') or (regop_t = '1' and if_ir(25) = '1')) and if_ir(24) = '1'
+						rdata4_signal(4 downto 0) 	when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(4) = '1' else
+				 		if_ir(11 downto 8) & '0' 	when cur_state = RUN and T3_run = '1' and regop_t = '1' and if_ir(25) = '1'					
 				 		else "00000" ;
 
 ---------------------------------------------------------INVALIDATION--------------------------------------------------------------------------------------------		
 
-inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1') 						else
+inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1')						else
+						if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(21) = '1')	else
                         "1110" 				when (cur_state = RUN and T4_run = '1') 						else
                         "1111" 				when cur_state = LINK or (cur_state = RUN and T5_run = '1') 	else
                         "0000"; 
 
 
-inval_adr2_signal 	<= if_ir(19 downto 16);
+inval_adr2_signal 	<= if_ir(15 downto 12);
 
 inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and trans_t = '1') 							else
                     	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else

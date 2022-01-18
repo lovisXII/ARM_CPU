@@ -155,7 +155,7 @@ exe_c 		<= (dec_alu_cy AND cy_alu_out) OR (NOT(dec_alu_cy) AND cy_shift_out);
 
 alu_in_op2 	<= res_shift 	when dec_comp_op2 	= '0' else not(res_shift);
 alu_in_op1 	<= dec_op1 		when dec_comp_op1 	= '0' else not(dec_op1);
-mem_adr 	<= dec_op1 		when dec_pre_index 	= '1' else res_alu;
+mem_adr 	<= dec_op1 		when dec_pre_index 	= '0' else res_alu;
 
 exe_dest 	<= dec_exe_dest;
 -- don't write back when no operation is done
