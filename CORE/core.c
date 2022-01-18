@@ -48,9 +48,15 @@ int get_inst(int a) {
 }
 
 int get_mem(int a) {
-    a = a >> 2;
+    a = a >> 2; // permet de gérer l'alignement
+    /**
+    La mémoire est composée de 4 tableau de pointeurs imbriqués les uns dans les autres.
+    Chaque section de l'adresse va définir la case de mem accéder.
+    Pour ce faire on va considérer des groupes de 8 bits de l'adresse (2^8 = 256) et on va utilisé l'opérateur logique and FF afin de ne conserver que le paquet de 8 bits voulu.
+    Ce paquet permettant de définir l'adresse accéder.
+    */
     int addr1 = a & 0xFF;
-    int addr2 = (a >> 8) & 0xFF;
+    int addr2 = (a >> 8) & 0xFF ;
     int addr3 = (a >> 16) & 0xFF;
     int addr4 = (a >> 24) & 0xFF;
     if (mem[addr1] && mem[addr1][addr2] && mem[addr1][addr2][addr3])  {
