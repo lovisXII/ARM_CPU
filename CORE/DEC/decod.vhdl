@@ -508,6 +508,22 @@ begin
     ldm_i <= '0';
 -------------------------------------------------------------------------------
 
+
+--DECODING TRANSFERT INSTRUCTION :
+
+ldr_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(22) = '0'
+					    else '0' ;
+
+str_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(22) = '0'
+					    else '0' ;
+
+ldrb_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(22) = '1'
+					    else '0' ;
+
+strb_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(22) = '1'
+					    else '0' ;
+-------------------------------------------------------------------------------
+
 ---------------- MACHINE A ETAT------------------------------------------------
 
 --Gestion des transitions :
@@ -686,17 +702,13 @@ dec_pre_index 		<= if_ir(24) when cur_state = RUN and T3_run = '1' and trans_t =
 dec_mem_up_down 	<= if_ir(23) when cur_state = RUN and T3_run = '1' and trans_t ='1' 
 					   else '0' ; 
 
-dec_mem_lw 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(21) = '0'
-					    else '0' ;
+dec_mem_lw 			<= ldr_i;
 
-dec_mem_sw 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(21) = '0'
-					    else '0' ;
+dec_mem_sw 			<= str_i ;
 
-dec_mem_lb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '1' and if_ir(21) = '1'
-					    else '0' ;
+dec_mem_lb 			<= ldrb_i ;
 
-dec_mem_sb 			<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(20) = '0' and if_ir(21) = '1'
-					    else '0' ;
+dec_mem_sb 			<= strb_i ;
 
 dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and trans_t = '1' 
 					   else "0000" ;
