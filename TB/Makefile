@@ -67,3 +67,4 @@ clean :
 	rm -f *.o main_tb work-obj93.cf *.vcd *.lst *.out $(BUILD)/*
 	make -C ${C_MOD_DIR}/ReadElf/src clean
 	make -C ${C_MOD_DIR}/src clean
+	make -C ../CORE clean
