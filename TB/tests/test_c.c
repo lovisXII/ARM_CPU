@@ -1,5 +1,9 @@
 extern void _bad();
 extern void _good();
+__asm__("mov sp, #0x80000000");
+__asm__("sub sp, sp, #4");
+
+
 int main() {
     int a = 3;
     int b = 4;
