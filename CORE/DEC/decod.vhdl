@@ -232,7 +232,10 @@ signal b_i    : Std_Logic;
 signal bl_i   : Std_Logic;
 
 -- Multiple transferts
-
+signal register_list : std_logic_vector(15 downto 0) ;
+signal last_register_decoded_mtrans : std_logic ;
+signal read_register_mtrans : integer ;
+signal read_adr2_mtrans : std_logic_vector(4 downto 0) ;
 -- RF read ports
 
 -- Flags
@@ -253,7 +256,8 @@ signal ovr	: Std_Logic;
  signal T6_run 		: std_logic ;
  signal T1_branch 	: std_logic ;
  signal T2_branch 	: std_logic ;
-
+ signal T1_mtrans 	: std_logic ;
+ signal T2_mtrans 	: std_logic ;
  -- Read Port of reg :
 
  signal radr1_signal : Std_Logic_Vector(3 downto 0) ;
@@ -502,12 +506,6 @@ begin
 	
 -------------------------------------------------------------------------------
 
---DECODING MULTIPLE TRANSFERT INSTRUCTION :
-
-    stm_i <= '0';
-    ldm_i <= '0';
--------------------------------------------------------------------------------
-
 
 --DECODING TRANSFERT INSTRUCTION :
 
@@ -544,6 +542,8 @@ strb_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(
 	--sur le truc du prof T3 est notre T1
     --T1_branch <= if2dec_empty ; 				-- le branchement a reussi : invalidation + vidange fifo et calcul nouveau pc
 	--T2_branch <= not(if2dec_empty) ; 			-- branchement echoue et run sequentiel
+	T1_mtrans <= '1' when last_register_decoded_mtrans = '1' ;
+	T2_mtrans <= '1' when last_register_decoded_mtrans = '0' ;
 
 --optimisation dans le cas où l'on a deux branchements qui se suivent, on reste dans l'etat branch
     next_state <=   FETCH   when (cur_state = FETCH and T1_fetch = '1') 
@@ -554,8 +554,10 @@ strb_i 	<= '1' when cur_state = RUN and T3_run = '1' and trans_t ='1' and if_ir(
                             or   (cur_state = RUN and (T1_run = '1' or T2_run = '1' or T3_run = '1')) else
 					LINK    when (cur_state = RUN and T4_run = '1') else
                     BRANCH  when (cur_state = RUN and T5_run = '1')
-                            or    cur_state = LINK else
-                    MTRANS  when (cur_state = RUN and T6_run = '1') else
+                            or    cur_state = LINK 
+							or 	  (cur_state = MTRANS and T2_mtrans = '1') else
+                    MTRANS  when (cur_state = RUN and T6_run = '1') 
+							or (cur_state = MTRANS and T1_mtrans = '1') else
                     FETCH;
 
 	Machine_etat : process(ck)
@@ -579,9 +581,10 @@ dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
 dec_alu_xor		<= '1' when (eor_i or teq_i) = '1' 															else '0' ;
 
 dec_comp_op1 	<= rsb_i or rsc_i;
-dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(23) = '0')
+dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or ((trans_t or mtrans_t) = '1' and dec_mem_up_down = '0')
 					else '0' ; 
-dec_cy <= '1' when (rsb_i or rsc_i or sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(23) = '0') else '0';
+dec_cy <= '1' when (rsb_i or rsc_i or sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or ((trans_t or mtrans_t) = '1' and dec_mem_up_down = '0')
+					else '0';
 
 ---------------------------------------------------------CARRY GESTION ------------------------------------------------------------------------------------------
 
@@ -601,17 +604,25 @@ dec2if_empty        <= dec2if_empty_signal;
 
 ---------------------------------------------------------READING PORT--------------------------------------------------------------------------------------------
 --TODO make sur the read register are valid in case of mem or branch (by changing need_rv1-4)
-radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') 						else
+radr1_signal		<=  if_ir(19 downto 16) when (cur_state = RUN 	and T3_run = '1') or (cur_state = MTRANS and T1_mtrans = '1') else
                 		"1111" 				when cur_state 	= RUN 	and T4_run = '1' 						else
                 		"1111" 				when cur_state 	= LINK 	or (cur_state = RUN and T5_run = '1') 	else
                 		"0000";
-need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and (regop_t = '1' or trans_t = '1')) or
+
+need_rv1            <= '1' when (cur_state = RUN and mov_i = '0' and mvn_i = '0' and (regop_t = '1' or trans_t = '1' )) or
                                 (cur_state 	= LINK) 	else '0';
-    
-radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN  and (trans_t = '1' 	or regop_t = '1')) 		
+
+read_adr2_mtrans	<= std_logic_vector(to_signed(read_register_mtrans, 5)) ;
+
+radr2_signal 		<= if_ir (3 	downto 0) 	when (cur_state = RUN  and (trans_t = '1' 	or regop_t = '1')) else
+					   read_adr2_mtrans(3 downto 0) when (cur_state = RUN and mtrans_t = '1') or (cur_state = MTRANS and T1_mtrans = '1') 
 					   else "0000" ;
 
-need_rv2 			<= '1' when cur_state = RUN and if_ir(25) = '0' and regop_t = '1' else '0';
+need_rv2 			<= '1' when (cur_state = RUN and if_ir(25) = '0' and regop_t = '1') 
+						or (cur_state = RUN and T3_run = '1' and mtrans_t = '1')
+						or (cur_state = MTRANS and T1_mtrans = '1') 
+						else '0';
+
 radr3_signal 		<= if_ir (15 	downto 12) 	when cur_state 	= RUN 	and trans_t 	= '1' and if_ir(20) = '0' 
 					   else "0000" ;
 
@@ -624,12 +635,15 @@ need_rv4 <= '1' when cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if
             else '0';
 
 ---------------------------------------------------------WRITING PORT & OP 1 & OP 2 VALUE--------------------------------------------------------------------------------------------
-dec_op1 			<=  rdata1_signal when mov_i = '0' and mvn_i = '0' else X"00000000";
+dec_op1 			<=  rdata1_signal when mov_i = '0' and mvn_i = '0' and cur_state /= MTRANS else
+						exe_res 	  when cur_state = MTRANS and T1_mtrans = '1'
+						else X"00000000";
 dec_op2 			<= 	rdata2_signal 									when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '0') or (trans_t = '1' and if_ir(25) = '1')) 	else
 						"000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
 						if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23 downto 0) & "00"
 						 			when cur_state = LINK or (cur_state = RUN and (T5_run = '1')) else -- dans le cas du link on va sommer pc avec l'offset  x 4
-						"11111111111111111111111111111000" 				when cur_state = RUN and (T4_run = '1') else
+						"11111111111111111111111111111000" 				when cur_state = RUN and (T4_run = '1') else 
+						X"00000004" when (cur_state = MTRANS and T1_mtrans = '1') or (cur_state = RUN and T6_run = '1') else
 						X"00000000" ;
 
 dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1') else
@@ -638,10 +652,6 @@ dec_exe_dest		<=  if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and
                 		"1111" when cur_state = LINK or (cur_state = RUN and T5_run = '1') else
                 		"0000";		
 ---------------------------------------------------------SHIFTER GESTION-----------------------------------------------------------------------------------------
-
--- dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00")
---                         or (regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000")
--- 					    else '0' ;
 
 dec_shift_lsl 		<= '1' when (cur_state = RUN and T3_run = '1' and ((trans_t = '1' and if_ir(25) = '1') or (regop_t = '1' and if_ir(25) = '0')) and if_ir(6 downto 5) = "00") else 
 						'1' when cur_state = RUN and T3_run = '1' and regop_t = '1' and if_ir(25) = '1' and if_ir(11 downto 8) = "0000" else
@@ -666,20 +676,24 @@ dec_shift_val 		<= 	if_ir(11 downto 7) 			when cur_state = RUN and T3_run = '1' 
 ---------------------------------------------------------INVALIDATION--------------------------------------------------------------------------------------------		
 
 inval_adr1_signal 	<= 	if_ir(15 downto 12) when (cur_state = RUN and T3_run = '1' and regop_t = '1')						else
-						if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(21) = '1')	else
+						if_ir(19 downto 16) when (cur_state = RUN and T3_run = '1' and trans_t = '1' and if_ir(21) = '1')
+								or ((cur_state = RUN and T6_run = '1') or (cur_state = MTRANS and T1_mtrans = '1'))	else
                         "1110" 				when (cur_state = RUN and T4_run = '1') 						else
                         "1111" 				when cur_state = LINK or (cur_state = RUN and T5_run = '1') 	else
                         "0000"; 
 
 
-inval_adr2_signal 	<= if_ir(15 downto 12);
+inval_adr2_signal 	<=  read_adr2_mtrans(3 downto 0) when ldm_i = '1'
+						else if_ir(15 downto 12);
 
 inval1_signal   	<=  if_ir(21) when (cur_state = RUN and T3_run = '1' and T1_run = '0' and trans_t = '1') 							else
                     	not(tst_i or teq_i or cmp_i or cmn_i) when (cur_state = RUN and T3_run = '1' and T1_run = '0' and regop_t = '1') else
-                    	'1' when (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') or cur_state = LINK 
-                    	else '0';
+                    	'1' when (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') or cur_state = LINK else
+                    	'1' when ((cur_state = RUN and T6_run = '1') or (cur_state = MTRANS and T1_mtrans = '1')) and if_ir(21) = '1'
+						else '0';
 
 inval2_signal 		<= '1' when (cur_state = RUN and T3_run = '1' and T1_run = '0' and trans_t = '1' and ldr_i = '1') 
+							or ldm_i = '1'
 						else '0';
 
 dec_flag_wb 		<=  if_ir(20) when (cur_state = RUN and T3_run = '1' and T1_run = '0') 
@@ -696,15 +710,17 @@ dec_exe_wb 			<= inval1_signal;
 
 --------------------------------------------------------- MEMORY GESTION ----------------------------------------------------------------------------------------
 
-dec_pre_index 		<= if_ir(24) when cur_state = RUN and T3_run = '1' and trans_t ='1' 
+dec_pre_index 		<= if_ir(24) when (cur_state = RUN and T3_run = '1' and trans_t ='1') or (cur_state = MTRANS and T1_mtrans = '1')
+					   or (cur_state = RUN and T6_run = '1')
 					   else '0' ;
 
-dec_mem_up_down 	<= if_ir(23) when cur_state = RUN and T3_run = '1' and trans_t ='1' 
-					   else '0' ; 
+dec_mem_up_down 	<= if_ir(23) when (cur_state = RUN and T3_run = '1' and trans_t ='1')  or (cur_state = MTRANS and T1_mtrans = '1')
+						or (cur_state = RUN and T6_run = '1')					   
+						else '0' ; 
 
-dec_mem_lw 			<= ldr_i;
+dec_mem_lw 			<= ldr_i or ldm_i;
 
-dec_mem_sw 			<= str_i ;
+dec_mem_sw 			<= str_i or stm_i;
 
 dec_mem_lb 			<= ldrb_i ;
 
@@ -714,6 +730,47 @@ dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and t
 					   else "0000" ;
 
 dec_mem_data 		<= rdata3_signal;
+
+---------------------------------------------------------  MULTIPLE TRANSFERT : ---------------------------------------------------------------------------------
+
+ldm_i 							<= '1' when ((cur_state = RUN and T6_run = '1') or (cur_state = MTRANS and T1_mtrans = '1')) 
+									   and if_ir(20) = '1' else '0' ;
+
+stm_i 							<= '1' when ((cur_state = RUN and T6_run = '1') or (cur_state = MTRANS and T1_mtrans = '1'))  
+									   and if_ir(20) = '0' else '0' ;
+
+register_list 					<= if_ir(15 downto 0) when cur_state = RUN and mtrans_t = '1' and T3_run = '1' ;
+
+last_register_decoded_mtrans 	<= '0' when read_register_mtrans = 20 and cur_state = MTRANS and T1_mtrans = '1' else '1' ;
+
+read_register_mtrans <=	0 	when register_list(0) = '1' 	else
+						1	when register_list(1) = '1' 	else  
+						2	when register_list(2) = '1' 	else
+						3	when register_list(3) = '1' 	else  
+						4	when register_list(4) = '1' 	else
+						5	when register_list(5) = '1' 	else  
+						6	when register_list(6) = '1' 	else
+						7	when register_list(7) = '1' 	else  
+						8	when register_list(8) = '1' 	else
+						9	when register_list(9) = '1' 	else  
+						10	when register_list(10) = '1' 	else
+						11	when register_list(11) = '1' 	else  
+						12	when register_list(12) = '1' 	else
+						13	when register_list(13) = '1' 	else  
+						14	when register_list(14) = '1' 	else
+						15	when register_list(15) = '1' 	else
+						20 ;
+settings_register_read : process(ck)
+begin
+if(rising_edge(ck))	then
+	if(read_register_mtrans <= 15) then
+		if register_list(read_register_mtrans) = '1' then
+			register_list(read_register_mtrans) <= '0' ;
+		end if;
+	end if;
+end if;
+end process ;
+
 --------------------------------------------------------- PC GESTION --------------------------------------------------------------------------------------------		
 
 inc_pc_signal 		<=  '0' when cur_state = BRANCH or cur_state = LINK or (cur_state = RUN and (T4_run = '1' or T5_run = '1') and T1_run = '0') else dec2if_push;
