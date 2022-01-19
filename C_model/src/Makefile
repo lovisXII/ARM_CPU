@@ -35,4 +35,4 @@ test_decod : decod.o test_decod.o
 	gcc ${C_FLAGS} -o test_decod decod.o test_decod.o
 
 clean :
-	rm *.o test_decod arm_sim ../lib/*.o
+	rm -f *.o test_decod arm_sim ../lib/*.o

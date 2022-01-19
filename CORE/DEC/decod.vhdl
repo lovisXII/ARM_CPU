@@ -724,7 +724,7 @@ dec_mem_sw 			<= str_i or stm_i;
 
 dec_mem_lb 			<= ldrb_i ;
 
-dec_mem_sb 			<= strb_i ;
+dec_mem_sb 			<= strb_i ;  
 
 dec_mem_dest		<= if_ir(15 downto 12) when cur_state = RUN and T3_run = '1' and trans_t = '1' 
 					   else "0000" ;

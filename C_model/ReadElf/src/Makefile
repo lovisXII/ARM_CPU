@@ -16,4 +16,4 @@ ReadElf : ElfObj.o ReadElf.o
 	cp ReadElf ../bin/
 
 clean :
-	rm  *.o ReadElf ../lib/*.o
+	rm  -f *.o ReadElf ../lib/*.o
