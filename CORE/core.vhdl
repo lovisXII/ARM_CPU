@@ -343,7 +343,8 @@ dec2exe_input 		 <= 	dec_op1 			& dec_op2 		& dec_exe_dest 	& dec_exe_wb 	& dec_
 dec_alu_cmd_signal	  <= 	"00" when dec_alu_add 	= '1' else
 							"01" when dec_alu_and	= '1' else
 							"10" when dec_alu_or 	= '1' else
-							"11" when dec_alu_xor 	= '1' ;
+							"11" when dec_alu_xor 	= '1' else 
+                            "00";
 	ifetch_i : ifetch
 	port map (
 	-- Icache interface

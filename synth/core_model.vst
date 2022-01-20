@@ -1,0 +1,1149 @@
+entity core_model is
+   port (
+      dec_op1       : in      bit_vector(31 downto 0);
+      dec_op2       : in      bit_vector(31 downto 0);
+      dec_exe_dest  : in      bit_vector(3 downto 0);
+      dec_exe_wb    : in      bit;
+      dec_flag_wb   : in      bit;
+      dec_mem_data  : in      bit_vector(31 downto 0);
+      dec_mem_dest  : in      bit_vector(3 downto 0);
+      dec_pre_index : in      bit;
+      dec_mem_lw    : in      bit;
+      dec_mem_lb    : in      bit;
+      dec_mem_sw    : in      bit;
+      dec_mem_sb    : in      bit;
+      dec_shift_lsl : in      bit;
+      dec_shift_lsr : in      bit;
+      dec_shift_asr : in      bit;
+      dec_shift_ror : in      bit;
+      dec_shift_rrx : in      bit;
+      dec_shift_val : in      bit_vector(4 downto 0);
+      dec_cy        : in      bit;
+      dec_comp_op1  : in      bit;
+      dec_comp_op2  : in      bit;
+      dec_alu_cy    : in      bit;
+      dec_alu_add   : in      bit;
+      dec_alu_and   : in      bit;
+      dec_alu_or    : in      bit;
+      dec_alu_xor   : in      bit;
+      dec2exe_input : out     bit_vector(126 downto 0);
+      vss           : in      bit;
+      vdd           : in      bit
+ );
+end core_model;
+
+architecture structural of core_model is
+Component inv_x2
+   port (
+      i   : in      bit;
+      nq  : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component on12_x1
+   port (
+      i0  : in      bit;
+      i1  : in      bit;
+      q   : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component noa22_x1
+   port (
+      i0  : in      bit;
+      i1  : in      bit;
+      i2  : in      bit;
+      nq  : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component no2_x1
+   port (
+      i0  : in      bit;
+      i1  : in      bit;
+      nq  : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component no3_x1
+   port (
+      i0  : in      bit;
+      i1  : in      bit;
+      i2  : in      bit;
+      nq  : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component buf_x2
+   port (
+      i   : in      bit;
+      q   : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+signal on12_x1_sig   : bit;
+signal no2_x1_sig    : bit;
+signal inv_x2_sig    : bit;
+
+begin
+
+inv_x2_ins : inv_x2
+   port map (
+      i   => dec_alu_and,
+      nq  => inv_x2_sig,
+      vdd => vdd,
+      vss => vss
+   );
+
+on12_x1_ins : on12_x1
+   port map (
+      i0  => dec_alu_xor,
+      i1  => dec_alu_or,
+      q   => on12_x1_sig,
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_0_ins : noa22_x1
+   port map (
+      i0  => on12_x1_sig,
+      i1  => inv_x2_sig,
+      i2  => dec_alu_add,
+      nq  => dec2exe_input(0),
+      vdd => vdd,
+      vss => vss
+   );
+
+no2_x1_ins : no2_x1
+   port map (
+      i0  => dec_alu_xor,
+      i1  => dec_alu_or,
+      nq  => no2_x1_sig,
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_1_ins : no3_x1
+   port map (
+      i0  => dec_alu_and,
+      i1  => no2_x1_sig,
+      i2  => dec_alu_add,
+      nq  => dec2exe_input(1),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_2_ins : buf_x2
+   port map (
+      i   => dec_alu_cy,
+      q   => dec2exe_input(2),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_3_ins : buf_x2
+   port map (
+      i   => dec_comp_op2,
+      q   => dec2exe_input(3),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_4_ins : buf_x2
+   port map (
+      i   => dec_comp_op1,
+      q   => dec2exe_input(4),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_5_ins : buf_x2
+   port map (
+      i   => dec_cy,
+      q   => dec2exe_input(5),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_6_ins : buf_x2
+   port map (
+      i   => dec_shift_val(0),
+      q   => dec2exe_input(6),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_7_ins : buf_x2
+   port map (
+      i   => dec_shift_val(1),
+      q   => dec2exe_input(7),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_8_ins : buf_x2
+   port map (
+      i   => dec_shift_val(2),
+      q   => dec2exe_input(8),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_9_ins : buf_x2
+   port map (
+      i   => dec_shift_val(3),
+      q   => dec2exe_input(9),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_10_ins : buf_x2
+   port map (
+      i   => dec_shift_val(4),
+      q   => dec2exe_input(10),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_11_ins : buf_x2
+   port map (
+      i   => dec_shift_rrx,
+      q   => dec2exe_input(11),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_12_ins : buf_x2
+   port map (
+      i   => dec_shift_ror,
+      q   => dec2exe_input(12),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_13_ins : buf_x2
+   port map (
+      i   => dec_shift_asr,
+      q   => dec2exe_input(13),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_14_ins : buf_x2
+   port map (
+      i   => dec_shift_lsr,
+      q   => dec2exe_input(14),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_15_ins : buf_x2
+   port map (
+      i   => dec_shift_lsl,
+      q   => dec2exe_input(15),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_16_ins : buf_x2
+   port map (
+      i   => dec_mem_sb,
+      q   => dec2exe_input(16),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_17_ins : buf_x2
+   port map (
+      i   => dec_mem_sw,
+      q   => dec2exe_input(17),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_18_ins : buf_x2
+   port map (
+      i   => dec_mem_lb,
+      q   => dec2exe_input(18),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_19_ins : buf_x2
+   port map (
+      i   => dec_mem_lw,
+      q   => dec2exe_input(19),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_20_ins : buf_x2
+   port map (
+      i   => dec_pre_index,
+      q   => dec2exe_input(20),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_21_ins : buf_x2
+   port map (
+      i   => dec_mem_dest(0),
+      q   => dec2exe_input(21),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_22_ins : buf_x2
+   port map (
+      i   => dec_mem_dest(1),
+      q   => dec2exe_input(22),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_23_ins : buf_x2
+   port map (
+      i   => dec_mem_dest(2),
+      q   => dec2exe_input(23),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_24_ins : buf_x2
+   port map (
+      i   => dec_mem_dest(3),
+      q   => dec2exe_input(24),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_25_ins : buf_x2
+   port map (
+      i   => dec_mem_data(0),
+      q   => dec2exe_input(25),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_26_ins : buf_x2
+   port map (
+      i   => dec_mem_data(1),
+      q   => dec2exe_input(26),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_27_ins : buf_x2
+   port map (
+      i   => dec_mem_data(2),
+      q   => dec2exe_input(27),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_28_ins : buf_x2
+   port map (
+      i   => dec_mem_data(3),
+      q   => dec2exe_input(28),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_29_ins : buf_x2
+   port map (
+      i   => dec_mem_data(4),
+      q   => dec2exe_input(29),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_30_ins : buf_x2
+   port map (
+      i   => dec_mem_data(5),
+      q   => dec2exe_input(30),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_31_ins : buf_x2
+   port map (
+      i   => dec_mem_data(6),
+      q   => dec2exe_input(31),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_32_ins : buf_x2
+   port map (
+      i   => dec_mem_data(7),
+      q   => dec2exe_input(32),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_33_ins : buf_x2
+   port map (
+      i   => dec_mem_data(8),
+      q   => dec2exe_input(33),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_34_ins : buf_x2
+   port map (
+      i   => dec_mem_data(9),
+      q   => dec2exe_input(34),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_35_ins : buf_x2
+   port map (
+      i   => dec_mem_data(10),
+      q   => dec2exe_input(35),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_36_ins : buf_x2
+   port map (
+      i   => dec_mem_data(11),
+      q   => dec2exe_input(36),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_37_ins : buf_x2
+   port map (
+      i   => dec_mem_data(12),
+      q   => dec2exe_input(37),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_38_ins : buf_x2
+   port map (
+      i   => dec_mem_data(13),
+      q   => dec2exe_input(38),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_39_ins : buf_x2
+   port map (
+      i   => dec_mem_data(14),
+      q   => dec2exe_input(39),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_40_ins : buf_x2
+   port map (
+      i   => dec_mem_data(15),
+      q   => dec2exe_input(40),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_41_ins : buf_x2
+   port map (
+      i   => dec_mem_data(16),
+      q   => dec2exe_input(41),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_42_ins : buf_x2
+   port map (
+      i   => dec_mem_data(17),
+      q   => dec2exe_input(42),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_43_ins : buf_x2
+   port map (
+      i   => dec_mem_data(18),
+      q   => dec2exe_input(43),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_44_ins : buf_x2
+   port map (
+      i   => dec_mem_data(19),
+      q   => dec2exe_input(44),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_45_ins : buf_x2
+   port map (
+      i   => dec_mem_data(20),
+      q   => dec2exe_input(45),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_46_ins : buf_x2
+   port map (
+      i   => dec_mem_data(21),
+      q   => dec2exe_input(46),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_47_ins : buf_x2
+   port map (
+      i   => dec_mem_data(22),
+      q   => dec2exe_input(47),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_48_ins : buf_x2
+   port map (
+      i   => dec_mem_data(23),
+      q   => dec2exe_input(48),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_49_ins : buf_x2
+   port map (
+      i   => dec_mem_data(24),
+      q   => dec2exe_input(49),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_50_ins : buf_x2
+   port map (
+      i   => dec_mem_data(25),
+      q   => dec2exe_input(50),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_51_ins : buf_x2
+   port map (
+      i   => dec_mem_data(26),
+      q   => dec2exe_input(51),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_52_ins : buf_x2
+   port map (
+      i   => dec_mem_data(27),
+      q   => dec2exe_input(52),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_53_ins : buf_x2
+   port map (
+      i   => dec_mem_data(28),
+      q   => dec2exe_input(53),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_54_ins : buf_x2
+   port map (
+      i   => dec_mem_data(29),
+      q   => dec2exe_input(54),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_55_ins : buf_x2
+   port map (
+      i   => dec_mem_data(30),
+      q   => dec2exe_input(55),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_56_ins : buf_x2
+   port map (
+      i   => dec_mem_data(31),
+      q   => dec2exe_input(56),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_57_ins : buf_x2
+   port map (
+      i   => dec_flag_wb,
+      q   => dec2exe_input(57),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_58_ins : buf_x2
+   port map (
+      i   => dec_exe_wb,
+      q   => dec2exe_input(58),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_59_ins : buf_x2
+   port map (
+      i   => dec_exe_dest(0),
+      q   => dec2exe_input(59),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_60_ins : buf_x2
+   port map (
+      i   => dec_exe_dest(1),
+      q   => dec2exe_input(60),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_61_ins : buf_x2
+   port map (
+      i   => dec_exe_dest(2),
+      q   => dec2exe_input(61),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_62_ins : buf_x2
+   port map (
+      i   => dec_exe_dest(3),
+      q   => dec2exe_input(62),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_63_ins : buf_x2
+   port map (
+      i   => dec_op2(0),
+      q   => dec2exe_input(63),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_64_ins : buf_x2
+   port map (
+      i   => dec_op2(1),
+      q   => dec2exe_input(64),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_65_ins : buf_x2
+   port map (
+      i   => dec_op2(2),
+      q   => dec2exe_input(65),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_66_ins : buf_x2
+   port map (
+      i   => dec_op2(3),
+      q   => dec2exe_input(66),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_67_ins : buf_x2
+   port map (
+      i   => dec_op2(4),
+      q   => dec2exe_input(67),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_68_ins : buf_x2
+   port map (
+      i   => dec_op2(5),
+      q   => dec2exe_input(68),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_69_ins : buf_x2
+   port map (
+      i   => dec_op2(6),
+      q   => dec2exe_input(69),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_70_ins : buf_x2
+   port map (
+      i   => dec_op2(7),
+      q   => dec2exe_input(70),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_71_ins : buf_x2
+   port map (
+      i   => dec_op2(8),
+      q   => dec2exe_input(71),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_72_ins : buf_x2
+   port map (
+      i   => dec_op2(9),
+      q   => dec2exe_input(72),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_73_ins : buf_x2
+   port map (
+      i   => dec_op2(10),
+      q   => dec2exe_input(73),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_74_ins : buf_x2
+   port map (
+      i   => dec_op2(11),
+      q   => dec2exe_input(74),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_75_ins : buf_x2
+   port map (
+      i   => dec_op2(12),
+      q   => dec2exe_input(75),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_76_ins : buf_x2
+   port map (
+      i   => dec_op2(13),
+      q   => dec2exe_input(76),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_77_ins : buf_x2
+   port map (
+      i   => dec_op2(14),
+      q   => dec2exe_input(77),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_78_ins : buf_x2
+   port map (
+      i   => dec_op2(15),
+      q   => dec2exe_input(78),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_79_ins : buf_x2
+   port map (
+      i   => dec_op2(16),
+      q   => dec2exe_input(79),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_80_ins : buf_x2
+   port map (
+      i   => dec_op2(17),
+      q   => dec2exe_input(80),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_81_ins : buf_x2
+   port map (
+      i   => dec_op2(18),
+      q   => dec2exe_input(81),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_82_ins : buf_x2
+   port map (
+      i   => dec_op2(19),
+      q   => dec2exe_input(82),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_83_ins : buf_x2
+   port map (
+      i   => dec_op2(20),
+      q   => dec2exe_input(83),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_84_ins : buf_x2
+   port map (
+      i   => dec_op2(21),
+      q   => dec2exe_input(84),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_85_ins : buf_x2
+   port map (
+      i   => dec_op2(22),
+      q   => dec2exe_input(85),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_86_ins : buf_x2
+   port map (
+      i   => dec_op2(23),
+      q   => dec2exe_input(86),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_87_ins : buf_x2
+   port map (
+      i   => dec_op2(24),
+      q   => dec2exe_input(87),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_88_ins : buf_x2
+   port map (
+      i   => dec_op2(25),
+      q   => dec2exe_input(88),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_89_ins : buf_x2
+   port map (
+      i   => dec_op2(26),
+      q   => dec2exe_input(89),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_90_ins : buf_x2
+   port map (
+      i   => dec_op2(27),
+      q   => dec2exe_input(90),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_91_ins : buf_x2
+   port map (
+      i   => dec_op2(28),
+      q   => dec2exe_input(91),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_92_ins : buf_x2
+   port map (
+      i   => dec_op2(29),
+      q   => dec2exe_input(92),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_93_ins : buf_x2
+   port map (
+      i   => dec_op2(30),
+      q   => dec2exe_input(93),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_94_ins : buf_x2
+   port map (
+      i   => dec_op2(31),
+      q   => dec2exe_input(94),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_95_ins : buf_x2
+   port map (
+      i   => dec_op1(0),
+      q   => dec2exe_input(95),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_96_ins : buf_x2
+   port map (
+      i   => dec_op1(1),
+      q   => dec2exe_input(96),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_97_ins : buf_x2
+   port map (
+      i   => dec_op1(2),
+      q   => dec2exe_input(97),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_98_ins : buf_x2
+   port map (
+      i   => dec_op1(3),
+      q   => dec2exe_input(98),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_99_ins : buf_x2
+   port map (
+      i   => dec_op1(4),
+      q   => dec2exe_input(99),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_100_ins : buf_x2
+   port map (
+      i   => dec_op1(5),
+      q   => dec2exe_input(100),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_101_ins : buf_x2
+   port map (
+      i   => dec_op1(6),
+      q   => dec2exe_input(101),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_102_ins : buf_x2
+   port map (
+      i   => dec_op1(7),
+      q   => dec2exe_input(102),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_103_ins : buf_x2
+   port map (
+      i   => dec_op1(8),
+      q   => dec2exe_input(103),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_104_ins : buf_x2
+   port map (
+      i   => dec_op1(9),
+      q   => dec2exe_input(104),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_105_ins : buf_x2
+   port map (
+      i   => dec_op1(10),
+      q   => dec2exe_input(105),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_106_ins : buf_x2
+   port map (
+      i   => dec_op1(11),
+      q   => dec2exe_input(106),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_107_ins : buf_x2
+   port map (
+      i   => dec_op1(12),
+      q   => dec2exe_input(107),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_108_ins : buf_x2
+   port map (
+      i   => dec_op1(13),
+      q   => dec2exe_input(108),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_109_ins : buf_x2
+   port map (
+      i   => dec_op1(14),
+      q   => dec2exe_input(109),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_110_ins : buf_x2
+   port map (
+      i   => dec_op1(15),
+      q   => dec2exe_input(110),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_111_ins : buf_x2
+   port map (
+      i   => dec_op1(16),
+      q   => dec2exe_input(111),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_112_ins : buf_x2
+   port map (
+      i   => dec_op1(17),
+      q   => dec2exe_input(112),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_113_ins : buf_x2
+   port map (
+      i   => dec_op1(18),
+      q   => dec2exe_input(113),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_114_ins : buf_x2
+   port map (
+      i   => dec_op1(19),
+      q   => dec2exe_input(114),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_115_ins : buf_x2
+   port map (
+      i   => dec_op1(20),
+      q   => dec2exe_input(115),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_116_ins : buf_x2
+   port map (
+      i   => dec_op1(21),
+      q   => dec2exe_input(116),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_117_ins : buf_x2
+   port map (
+      i   => dec_op1(22),
+      q   => dec2exe_input(117),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_118_ins : buf_x2
+   port map (
+      i   => dec_op1(23),
+      q   => dec2exe_input(118),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_119_ins : buf_x2
+   port map (
+      i   => dec_op1(24),
+      q   => dec2exe_input(119),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_120_ins : buf_x2
+   port map (
+      i   => dec_op1(25),
+      q   => dec2exe_input(120),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_121_ins : buf_x2
+   port map (
+      i   => dec_op1(26),
+      q   => dec2exe_input(121),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_122_ins : buf_x2
+   port map (
+      i   => dec_op1(27),
+      q   => dec2exe_input(122),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_123_ins : buf_x2
+   port map (
+      i   => dec_op1(28),
+      q   => dec2exe_input(123),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_124_ins : buf_x2
+   port map (
+      i   => dec_op1(29),
+      q   => dec2exe_input(124),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_125_ins : buf_x2
+   port map (
+      i   => dec_op1(30),
+      q   => dec2exe_input(125),
+      vdd => vdd,
+      vss => vss
+   );
+
+dec2exe_input_126_ins : buf_x2
+   port map (
+      i   => dec_op1(31),
+      q   => dec2exe_input(126),
+      vdd => vdd,
+      vss => vss
+   );
+
+
+end structural;
