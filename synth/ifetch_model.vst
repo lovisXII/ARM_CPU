@@ -15,11 +15,12 @@ entity ifetch_model is
 end ifetch_model;
 
 architecture structural of ifetch_model is
-Component no2_x1
+Component o3_x2
    port (
       i0  : in      bit;
       i1  : in      bit;
-      nq  : out     bit;
+      i2  : in      bit;
+      q   : out     bit;
       vdd : in      bit;
       vss : in      bit
  );
@@ -28,17 +29,6 @@ end component;
 Component buf_x2
    port (
       i   : in      bit;
-      q   : out     bit;
-      vdd : in      bit;
-      vss : in      bit
- );
-end component;
-
-Component oa22_x2
-   port (
-      i0  : in      bit;
-      i1  : in      bit;
-      i2  : in      bit;
       q   : out     bit;
       vdd : in      bit;
       vss : in      bit
@@ -54,28 +44,36 @@ Component inv_x2
  );
 end component;
 
-Component no3_x1
+Component on12_x1
    port (
       i0  : in      bit;
       i1  : in      bit;
-      i2  : in      bit;
+      q   : out     bit;
+      vdd : in      bit;
+      vss : in      bit
+ );
+end component;
+
+Component no2_x1
+   port (
+      i0  : in      bit;
+      i1  : in      bit;
       nq  : out     bit;
       vdd : in      bit;
       vss : in      bit
  );
 end component;
 
-signal inv_x2_sig   : bit;
-signal inv_x2_2_sig : bit;
-signal aux0         : bit;
+signal not_aux1     : bit;
 
 begin
 
-aux0_ins : no2_x1
+not_aux1_ins : o3_x2
    port map (
-      i0  => ic_stall,
-      i1  => dec2if_empty,
-      nq  => aux0,
+      i0  => if2dec_full,
+      i1  => ic_stall,
+      i2  => dec2if_empty,
+      q   => not_aux1,
       vdd => vdd,
       vss => vss
    );
@@ -344,37 +342,19 @@ if_adr_valid_ins : inv_x2
       vss => vss
    );
 
-inv_x2_ins : inv_x2
+if_pop_ins : on12_x1
    port map (
-      i   => if2dec_full,
-      nq  => inv_x2_sig,
-      vdd => vdd,
-      vss => vss
-   );
-
-if_pop_ins : oa22_x2
-   port map (
-      i0  => aux0,
-      i1  => inv_x2_sig,
-      i2  => if_flush,
+      i0  => not_aux1,
+      i1  => if_flush,
       q   => if_pop,
       vdd => vdd,
       vss => vss
    );
 
-inv_x2_2_ins : inv_x2
-   port map (
-      i   => aux0,
-      nq  => inv_x2_2_sig,
-      vdd => vdd,
-      vss => vss
-   );
-
-if2dec_push_ins : no3_x1
+if2dec_push_ins : no2_x1
    port map (
       i0  => if_flush,
-      i1  => inv_x2_2_sig,
-      i2  => if2dec_full,
+      i1  => not_aux1,
       nq  => if2dec_push,
       vdd => vdd,
       vss => vss

@@ -85,4 +85,4 @@ chip.vhdl: ../CHIP/chip.vhdl
 	cp ../CHIP/chip.vhdl .
  
 chip.vst : chip.vhdl core.vst core_model.vst
-		vasy -I vhdl -V -o -a -p	 chip.vhdl chip
+		vasy -I vhdl -V -o -a	 chip.vhdl chip
