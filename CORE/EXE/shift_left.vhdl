@@ -14,14 +14,7 @@ end shift_left ;
 
 
 architecture behavior of shift_left is
-signal s1, s2, s4, s8 : std_logic_vector(31 downto 0);
 begin
-
-    s1 <= din_var(30 downto 0) & '0' when shift_value(0) = '1' else din_var;
-    s2 <= s1(29 downto 0) & "00" when shift_value(1) = '1' else s1;
-    s4 <= s2(27 downto 0) & x"0" when shift_value(2) = '1' else s2;
-    s8 <= s4(23 downto 0) & x"00" when shift_value(3) = '1' else s4;
-    dout <= s8(15 downto 0) & x"0000" when shift_value(4) = '1' else s8;
         
 	process(din,shift_value)
 	

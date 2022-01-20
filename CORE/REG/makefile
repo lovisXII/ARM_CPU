@@ -35,6 +35,8 @@ clean:
 		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.o
 
 synth: one_hot.vst reg_model.vst
+	mkdir -p $(BUILD)/../synth
+	cp *.vst $(BUILD)/../synth/.
 
 one_hot.vbe: one_hot.vhdl
 		vasy -I vhdl -V -o -p -a one_hot.vhdl one_hot

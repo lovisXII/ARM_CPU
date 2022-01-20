@@ -6,9 +6,14 @@
 _start:
     /* 0x00 Reset Interrupt vector address */
     mov r0, #0x80000000
-    ldmda r0, {r1,r2}
-    b    _good
-
+    sub r0, r0, #4  //r0 = 7FFFFFFC
+    mov r1, r0 // r1 = 7FFFFFFC
+    mov r2, #2 // r2 = 2
+    mov r3, #3 // r3 = 3
+    stmda r1!,{r2,r3} // @7FFFFFFC = r2, @7FFFFFF8 = r3
+    ldmda r0!, {r1,r2}
+    cmp r1, #2
+    beq    _good
     /* 0x04 Undefined Instruction Interrupt vector address */
     b    _bad
     nop 

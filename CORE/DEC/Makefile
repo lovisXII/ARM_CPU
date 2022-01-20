@@ -35,3 +35,29 @@ analyse: $(addsuffix .vhdl,$(MODS))
 
 clean:
 		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.o
+
+synth: fifo_32b.vst decod_model.vst
+	mkdir -p $(BUILD)/../synth
+	cp *.vst $(BUILD)/../synth/.
+
+fifo_32b.vbe: fifo_32b.vhdl
+		vasy -I vhdl -V -o -p fifo_32b.vhdl fifo_32b
+
+fifo_32b_o.vbe : fifo_32b.vbe
+		boom -V fifo_32b fifo_32b_o
+
+fifo_32b.vst : fifo_32b_o.vbe
+		boog fifo_32b_o fifo_32b
+
+decod.vst : decod.vhdl fifo_32b.vst reg.vst
+		vasy -I vhdl -V -o -a -p	 decod.vhdl decod
+
+decod_model_o.vbe : decod.vst
+		boom -V -O decod_model decod_model_o
+
+decod_model.vst : decod_model_o.vbe
+		boog decod_model_o decod_model
+
+reg.vst : ../REG/reg.vhdl ../REG/one_hot.vhdl
+	make -C ../REG/ synth 
+	cp $(BUILD)/../synth/reg.vst .

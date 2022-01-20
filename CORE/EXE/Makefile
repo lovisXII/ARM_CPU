@@ -10,7 +10,7 @@ GHDL?=ghdl
 GHDLFLAGS?=--workdir=$(BUILD)
 GHDLRUNFLAGS?=
 TB=exec_tb
-COMPONENTS=exec alu shifter
+COMPONENTS=exec alu shifter ror shift_left shift_right
 MODS=$(COMPONENTS) $(TB)
 
 # Default target : elaborate
@@ -35,15 +35,44 @@ clean:
 		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.o
 
 synth: exec_model.vst
+	mkdir -p $(BUILD)/../synth
+	cp *.vst $(BUILD)/../synth/.
 
-shifter.vbe: shifter.vhdl
-		vasy -I vhdl -V -o -a shifter.vhdl shifter
+shift_right.vbe: shift_right.vhdl
+		vasy -I vhdl -V -o -a shift_right.vhdl shift_right
 
-shifter_o.vbe : shifter.vbe
-		boom -V shifter shifter_o
+shift_right_o.vbe : shift_right.vbe
+		boom -V shift_right shift_right_o
 
-shifter.vst : shifter_o.vbe
-		boog shifter_o shifter
+shift_right.vst : shift_right_o.vbe
+		boog shift_right_o shift_right
+
+shift_left.vbe: shift_left.vhdl
+		vasy -I vhdl -V -o -a shift_left.vhdl shift_left
+
+shift_left_o.vbe : shift_left.vbe
+		boom -V shift_left shift_left_o
+
+shift_left.vst : shift_left_o.vbe
+		boog shift_left_o shift_left
+
+ror.vbe: ror.vhdl
+		vasy -I vhdl -V -o -a ror.vhdl ror
+
+ror_o.vbe : ror.vbe
+		boom -V ror ror_o
+
+ror.vst : ror_o.vbe
+		boog ror_o ror
+
+shifter.vst : shifter.vhdl shift_left.vst shift_right.vst ror.vst
+		vasy -I vhdl -V -o -a -p shifter.vhdl shifter
+
+shifter_model_o.vbe : shifter.vst
+		boom -V -O shifter_model shifter_model_o
+
+shifter_model.vst : shifter_model_o.vbe
+		boog shifter_model_o shifter_model
 
 alu.vbe: alu.vhdl
 		vasy -I vhdl -V -o -a alu.vhdl alu
@@ -64,7 +93,7 @@ fifo_72b.vst : fifo_72b_o.vbe
 		boog fifo_72b_o fifo_72b
 
 
-exec.vst : exec.vhdl fifo_72b.vst alu.vst shifter.vst
+exec.vst : exec.vhdl fifo_72b.vst alu.vst shifter_model.vst
 		vasy -I vhdl -V -o -a -p	 exec.vhdl exec
 
 exec_model_o.vbe : exec.vst
