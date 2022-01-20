@@ -3,4 +3,5 @@
 *.vcd 
 *.vbe
 *.lst
+*.xsc
 work/*

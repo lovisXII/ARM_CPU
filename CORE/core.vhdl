@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity arm_core is
+entity core is
 	port(
 
 	-- Icache interface
@@ -27,10 +27,10 @@ entity arm_core is
 			reset_n			: in Std_Logic;
 			vdd				: in bit;
 			vss				: in bit);
-end arm_core;
+end core;
 
 
-architecture struct OF arm_core is
+architecture struct OF core is
 
 Component IFetch
 	port(

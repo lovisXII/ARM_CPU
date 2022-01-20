@@ -27,7 +27,7 @@ $(BUILD)/core_tb.o: $(SOURCES)
 clean:
 		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.lst *.o
 
-synth: core_model.vst
+synth: chip.vst
 	cp *.vst $(BUILD)/../synth/.
 
 ifetch.vhdl: IFETCH/ifetch.vhdl
@@ -72,7 +72,7 @@ fifo_127b.vst : fifo_127b_o.vbe
 decod.vst: $(BUILD)/../synth/decod.vst
 	cp $(BUILD)/../synth/*.vst .
 
-core.vst : core.vhdl mem.vst ifetch.vst decod.vst fifo_127b.vst
+core.vst : core.vhdl mem.vst ifetch_model.vst decod.vst fifo_127b.vst 
 		vasy -I vhdl -V -o -a -p	 core.vhdl core
 
 core_model_o.vbe : core.vst
@@ -80,3 +80,9 @@ core_model_o.vbe : core.vst
 
 core_model.vst : core_model_o.vbe
 		boog core_model_o core_model
+
+chip.vhdl: ../CHIP/chip.vhdl
+	cp ../CHIP/chip.vhdl .
+ 
+chip.vst : chip.vhdl core.vst core_model.vst
+		vasy -I vhdl -V -o -a -p	 chip.vhdl chip

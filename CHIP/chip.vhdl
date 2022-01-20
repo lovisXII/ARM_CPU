@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity arm_chip is
+entity chip is
 	port(
 	-- Icache interface
 			if_adr			: out Std_Logic_Vector(31 downto 0);
@@ -28,12 +28,12 @@ entity arm_chip is
 			vssi				: in bit;
 			vdde				: in bit;
 			vsse				: in bit);
-end arm_chip;
+end chip;
 
 
-architecture struct OF arm_chip is
+architecture struct OF chip is
 
-Component arm_core
+Component core
 	port(
 	-- Icache interface
 			if_adr			: out Std_Logic_Vector(31 downto 0);
@@ -158,7 +158,7 @@ end Component;
 	signal ck_ring					: Std_Logic;
 
 begin
-	arm_core_i : arm_core
+	core_i : core
 	port map (
 			if_adr			=> core_if_adr,
 			if_adr_valid	=> core_if_adr_valid,
