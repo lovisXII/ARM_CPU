@@ -1,7 +1,6 @@
 *.o
 *.cf 
 *.vcd 
-*.vst 
 *.vbe
 *.lst
 work/*
