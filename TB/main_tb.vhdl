@@ -38,7 +38,7 @@ architecture behav of main_tb is
 			ck					: in Std_logic);
 	end component;
 
-	component arm_core
+	component core
 	port(
 	-- Icache interface
 			if_adr			: out Std_Logic_Vector(31 downto 0) ;
@@ -109,7 +109,7 @@ architecture behav of main_tb is
 
 					ck			=> ck);
 
-	arm_core_i : arm_core
+	core_i : core
 	port map (
 
 			if_adr			=> if_adr,

@@ -235,6 +235,8 @@ signal bl_i   : Std_Logic;
 signal register_list : std_logic_vector(15 downto 0) ;
 signal last_register_decoded_mtrans : std_logic ;
 signal read_register_mtrans : integer ;
+signal read_register_mtrans_l : integer ;
+signal read_register_mtrans_s : integer ;
 signal read_adr2_mtrans : std_logic_vector(4 downto 0) ;
 -- RF read ports
 
@@ -580,9 +582,9 @@ dec_alu_or 		<= '1' when orr_i = '1' 																	else '0' ;
 dec_alu_xor		<= '1' when (eor_i or teq_i) = '1' 															else '0' ;
 
 dec_comp_op1 	<= rsb_i or rsc_i;
-dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or ((trans_t = '1' and dec_mem_up_down = '0') or (mtrans_t = '1'  and cur_state = MTRANS and dec_mem_up_down = '0'))
+dec_comp_op2 	<= '1' when (sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or ((trans_t = '1' and dec_mem_up_down = '0') or (mtrans_t = '1'  and cur_state = MTRANS and dec_mem_up_down = '0') or (cur_state = RUN and (T4_run = '1')))
 					else '0' ; 
-dec_cy <= '1' when (rsb_i or rsc_i or sub_i or sbc_i or cmp_i or bic_i or mvn_i) = '1' or ((trans_t = '1' and dec_mem_up_down = '0') or (mtrans_t = '1'  and cur_state = MTRANS and dec_mem_up_down = '0'))
+dec_cy <= '1' when (rsb_i or rsc_i or sub_i or sbc_i or cmp_i or bic_i) = '1' or ((trans_t = '1' and dec_mem_up_down = '0') or (mtrans_t = '1'  and cur_state = MTRANS and dec_mem_up_down = '0') or (cur_state = RUN and (T4_run = '1')))
 					else '0';
 
 ---------------------------------------------------------CARRY GESTION ------------------------------------------------------------------------------------------
@@ -644,7 +646,7 @@ dec_op2 			<= 	rdata2_signal 									when cur_state = RUN and T3_run = '1' and 
 						"000000000000000000000000" & if_ir(7 downto 0) 	when cur_state = RUN and T3_run = '1' and ((regop_t ='1' and if_ir(25) = '1') or (trans_t = '1' and if_ir(25) = '0')) 	else
 						if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23) & if_ir(23 downto 0) & "00"
 						 			when cur_state = LINK or (cur_state = RUN and (T5_run = '1')) else -- dans le cas du link on va sommer pc avec l'offset  x 4
-						"11111111111111111111111111111000" 				when cur_state = RUN and (T4_run = '1') else 
+                        X"00000004" 				when cur_state = RUN and (T4_run = '1') else 
 						X"00000004" when (cur_state = MTRANS and T1_mtrans = '1') else
 						X"00000000" ;
 
@@ -741,7 +743,7 @@ stm_i 							<= '1' when  mtrans_t = '1' and if_ir(20) = '0' else '0' ;
 
 last_register_decoded_mtrans 	<= '0' when read_register_mtrans = 20 else '1' ;
 
-read_register_mtrans <=	0 	when register_list(0) = '1' 	else
+read_register_mtrans_s <=	0 	when register_list(0) = '1' 	else
 						1	when register_list(1) = '1' 	else  
 						2	when register_list(2) = '1' 	else
 						3	when register_list(3) = '1' 	else  
@@ -758,6 +760,24 @@ read_register_mtrans <=	0 	when register_list(0) = '1' 	else
 						14	when register_list(14) = '1' 	else
 						15	when register_list(15) = '1' 	else
 						20 ;
+
+read_register_mtrans_l <=	15	when register_list(15) = '1' 	else
+                            14	when register_list(14) = '1' 	else
+                            13	when register_list(13) = '1' 	else  
+                            12	when register_list(12) = '1' 	else
+                            11	when register_list(11) = '1' 	else  
+                            10	when register_list(10) = '1' 	else
+                            9	when register_list(9) = '1' 	else  
+                            8	when register_list(8) = '1' 	else
+                            7	when register_list(7) = '1' 	else  
+                            6	when register_list(6) = '1' 	else
+                            5	when register_list(5) = '1' 	else  
+                            4	when register_list(4) = '1' 	else
+                            3	when register_list(3) = '1' 	else  
+                            2	when register_list(2) = '1' 	else
+                            1	when register_list(1) = '1' 	else  
+                            20 ;
+read_register_mtrans <= read_register_mtrans_l when ldm_i = '1' else read_register_mtrans_s; 
 settings_register_read : process(ck)
 begin
 if(rising_edge(ck))	then
