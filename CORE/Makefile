@@ -1,6 +1,6 @@
 BUILD=../work
 MBK_TARGET_LIB?=/home/timo/Documents/Cours/alliance/alliance/src/cells/src/sxlib/
-GHDL?=ghdl
+GHDL?=/opt/ghdl/bin/ghdl
 GHDLFLAGS?=--workdir=$(BUILD)
 GHDLRUNFLAGS?=
 COMPONENTS=core IFETCH/ifetch DEC/decod EXE/shift_left EXE/shift_right EXE/exec EXE/ror EXE/shifter EXE/alu MEM/mem REG/reg REG/one_hot util/fifo_127b util/fifo_32b util/fifo_72b
@@ -15,17 +15,17 @@ all : $(BUILD)/a.out
 analyse: $(OBJ)
 
 $(BUILD)/a.out: $(BUILD)/e~$(TB).o core.c
-	cd $(BUILD) && clang ../CORE/core.c -Wl,`ghdl --list-link $(TB)`
+	cd $(BUILD) && clang ../CORE/core.c -Wl,`$(GHDL) --list-link $(TB)`
 
 
 $(BUILD)/e~$(TB).o: $(OBJ)
-	cd $(BUILD) && ghdl --bind $(TB)
+	cd $(BUILD) && $(GHDL) --bind $(TB)
 	
 $(BUILD)/core_tb.o: $(SOURCES)
 	$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.lst *.o
+		rm -f *.vst *.vbe *.xsc *.lst *.o
 
 synth: chip.vst
 	cp *.vst $(BUILD)/../synth/.
