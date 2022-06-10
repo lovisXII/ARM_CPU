@@ -25,7 +25,7 @@ $(BUILD)/core_tb.o: $(SOURCES)
 	$(GHDL) -a $(GHDLFLAGS) $^
 
 clean:
-		rm -f *.vst *.vbe *.xsc *.lst *.o
+		rm -f $(BUILD)/* *.vst *.vbe *.xsc *.lst *.o
 
 synth: chip.vst
 	cp *.vst $(BUILD)/../synth/.
