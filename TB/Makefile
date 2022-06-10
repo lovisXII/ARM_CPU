@@ -1,4 +1,4 @@
-GHDL=ghdl
+GHDL=/opt/ghdl/bin/ghdl
 BUILD=../work
 GHDL_OP = -v --workdir=$(BUILD)
 C_MOD_DIR = ../C_model/
