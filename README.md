@@ -26,19 +26,19 @@ To compile this project you will need :
 # How to compile
 
 Once you have all the needed tools please do the following commands from the root:
-``bash
+```bash
 cd TOOLS
 make
-``
-Then you have to choose a .s or .c file, for example :
+```
+Then you have to choose a .s or .c file, for example :\
 ``tests/test_acces_mem_multiple.s``\
 Then you need to use the proper compiler, in our case :
-``bash
+```bash
 arm-linux-gnu-as tests/test_acces_mem_multiple.s
-``
+```
 It will generate a file named ``a.out``.\
 You juste have to give it as parameter to the executable main_tb :
-``bash
+```bash
 main_tb a.out -run
-``
+```
 If the test works you will have ``good`` printed on your terminal, otherwise it will print ``bad``
