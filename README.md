@@ -1,7 +1,7 @@
 # Introduction
 
 This project is the material decription of an ARMv2a architecture. It s describe using VHDL langage. Every file have been created by Louis Geoffroy Pitailler and Timothée Le Berre, excepting the file inside C_model which have been created by our teacher Jean-Lou Debardieux.\
-We developped with architecture during our first Master year at Sorbonne University.
+We developped this architecture during our first Master year at Sorbonne University.
 
 # File architecture :
 
