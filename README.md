@@ -39,6 +39,6 @@ arm-linux-gnu-as tests/test_acces_mem_multiple.s
 It will generate a file named ``a.out``.\
 You juste have to give it as parameter to the executable main_tb :
 ```bash
-main_tb a.out -run
+./main_tb a.out 
 ```
 If the test works you will have ``good`` printed on your terminal, otherwise it will print ``bad``
