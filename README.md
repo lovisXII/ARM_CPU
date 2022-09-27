@@ -27,7 +27,7 @@ To compile this project you will need :
 
 Once you have all the needed tools please do the following commands from the root:
 ```bash
-cd TOOLS
+cd TB
 make
 ```
 Then you have to choose a .s or .c file, for example :\
