@@ -3,7 +3,12 @@ BUILD=../work
 GHDL_OP = -v --workdir=$(BUILD)
 C_MOD_DIR = ../C_model/
 CORE_DIR = ../CORE/
-all : main_tb
+all : build_dir main_tb
+
+build_dir :
+	mkdir -p ../work
+	mkdir -p ../C_model/lib
+	mkdir -p ../C_model/ReadElf/lib
 
 ram.o : ram.vhdl
 	${GHDL} -a ${GHDL_OP} ram.vhdl
