@@ -23,6 +23,27 @@ To compile this project you will need :
 * The binary of the armv2a compiler are for a Linux-Ubuntu distribution, if you're using a different distribution you will need to use other binary
 * You will need to setup the alliance toolchain from the Lip6 if you want to realise the synthesis of the chip (The makefile give you the possibility to do the synthesis)
 
+Here's a small script to recompile ghdl-llvm :
+```sh
+#! /bin/bash
+apt install gnat
+apt install clang
+apt install llvm
+echo "Installing dependencies"
+apt-get install libedit clang lldb lld pkg-config zlib1g-dev gnat
+
+echo "Downloading ghdl sources"
+wget https://github.com/ghdl/ghdl/archive/master.tar.gz
+tar -xvf master.tar.gz
+cd ghdl-master && mkdir -p build 
+cd build && ../configure --with-llvm-config=/usr/bin/llvm-config --prefix=/opt/ghdl
+make 
+make install 
+
+echo "export ghdl=/opt/ghdl/bin/ghdl" >> ~/.bashrc
+source ~/.bashrc
+```
+
 # How to compile
 
 Once you have all the needed tools please do the following commands from the root:
